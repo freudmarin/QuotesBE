@@ -31,7 +31,7 @@ public class AuthorService {
 
     public void syncAuthors() {
         int page = 1;
-        int size = 20;
+        int size = 100;
         while (true) {
             Call<AuthorPageDTO> call = apiService.listAuthors(page, size, "asc", "name", null);
             try {
