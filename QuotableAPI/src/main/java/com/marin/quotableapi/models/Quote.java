@@ -13,4 +13,5 @@ public class Quote {
     int length;
     String dateAdded;
     String dateModified;
+    List<String> tags;
 }

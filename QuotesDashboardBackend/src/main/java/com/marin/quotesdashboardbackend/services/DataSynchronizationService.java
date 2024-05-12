@@ -10,15 +10,18 @@ public class DataSynchronizationService {
 
     private final QuoteService quoteService;
 
+    private final TagService tagService;
 
-    public DataSynchronizationService(AuthorService authorService, QuoteService quoteService) {
+    public DataSynchronizationService(AuthorService authorService, QuoteService quoteService, TagService tagService) {
         this.authorService = authorService;
         this.quoteService = quoteService;
+        this.tagService = tagService;
     }
 
     @Scheduled(fixedRate = 3600000)
     public void synchronizeAuthorsAndsQuotes() {
         authorService.syncAuthors();
+        tagService.syncTags();
         quoteService.syncQuotes();
     }
 }

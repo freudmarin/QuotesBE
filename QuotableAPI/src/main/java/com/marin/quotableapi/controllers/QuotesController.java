@@ -48,7 +48,7 @@ public class QuotesController {
     @GetMapping("search")
     public Mono<SearchQuotesResponse> searchQuotes(
             @RequestParam String query,
-            @RequestParam(required = false, defaultValue = "content,author") String fields,
+            @RequestParam(required = false, defaultValue = "content,author,tags") String fields,
             @RequestParam(required = false, defaultValue = "0") int fuzzyMaxEdits,
             @RequestParam(required = false, defaultValue = "20") int limit,
             @RequestParam(required = false, defaultValue = "1") int skip) {

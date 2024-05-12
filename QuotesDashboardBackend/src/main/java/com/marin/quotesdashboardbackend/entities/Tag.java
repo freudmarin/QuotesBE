@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -19,18 +19,17 @@ import java.util.Set;
 @NoArgsConstructor
 public class Tag {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String name;
     private String slug;
 
     @Column(nullable = true)
     private int quoteCount;
 
-    @Column(nullable = true)
-    private LocalDateTime dateAdded;
+    private LocalDate dateAdded;
 
-    @Column(nullable = true)
-    private LocalDateTime dateModified;
+    private LocalDate dateModified;
 
     @ManyToMany(mappedBy = "tags")
     private Set<Quote> quotes = new HashSet<>();
@@ -46,5 +45,13 @@ public class Tag {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public Tag(String name, String slug, int quoteCount, LocalDate dateAdded, LocalDate dateModified) {
+        this.name = name;
+        this.slug = slug;
+        this.quoteCount = quoteCount;
+        this.dateAdded = dateAdded;
+        this.dateModified = dateModified;
     }
 }

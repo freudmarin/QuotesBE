@@ -2,10 +2,9 @@ package com.marin.quotesdashboardbackend.retrofit;
 
 import com.marin.quotesdashboardbackend.dtos.QuoteDTO;
 import com.marin.quotesdashboardbackend.dtos.SearchQuoteResponseDTO;
-import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
-
+import retrofit2.Call;
 
 import java.util.List;
 

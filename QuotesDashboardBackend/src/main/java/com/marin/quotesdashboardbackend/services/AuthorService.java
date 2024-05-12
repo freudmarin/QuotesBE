@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class AuthorService {
 
     private final Authors apiService;
-    private static final String serviceBaseUrl = "http://localhost:8081/api/authors/";
+    private static final String serviceBaseUrl = "http://localhost:8081";
     private final AuthorRepository authorRepository;
     public AuthorService(AuthorRepository authorRepository) {
         this.apiService = RetrofitClient.getClient(serviceBaseUrl).create(Authors.class);
