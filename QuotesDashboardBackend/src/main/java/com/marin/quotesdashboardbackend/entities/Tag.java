@@ -24,7 +24,6 @@ public class Tag {
     private String name;
     private String slug;
 
-    @Column(nullable = true)
     private int quoteCount;
 
     private LocalDate dateAdded;

@@ -60,7 +60,11 @@ public class QuoteService {
                 // Fetch all tags in one go and map them by name
                 Map<String, Tag> tagMap = tagRepository.findAllByNameIn(tagNamesForSearch)
                         .stream()
-                        .collect(Collectors.toMap(Tag::getName, Function.identity()));
+                        .collect(Collectors.toMap(
+                                Tag::getName,
+                                Function.identity(),
+                                (existing, replacement) -> existing
+                        ));
 
                 Set<String> existingTexts = quoteRepository.findTextsByContent(
                         quotes.stream().map(QuoteDTO::getContent).collect(Collectors.toList()));
