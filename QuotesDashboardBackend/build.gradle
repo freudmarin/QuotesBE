@@ -21,7 +21,6 @@ dependencies {
     implementation 'jakarta.validation:jakarta.validation-api:3.1.0-M2'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     runtimeOnly 'org.postgresql:postgresql'
 }

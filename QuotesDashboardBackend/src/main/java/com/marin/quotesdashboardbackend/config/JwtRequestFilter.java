@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
+@Slf4j
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
@@ -47,30 +49,49 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        log.info("Jwt Request filter invoked");
 
         jwtToken = requestTokenHeader.substring(7);
-        try {
-            username = jwtService.extractUsername(jwtToken);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Unable to get JWT Token");
-        } catch (ExpiredJwtException e) {
-            System.out.println("JWT Token has expired");
+        if (isJwtToken(jwtToken)) {
+            try {
+                username = jwtService.extractUsername(jwtToken);
+                log.info("Username : {} ", username);
+            } catch (IllegalArgumentException e) {
+                log.error("Unable to get JWT Token");
+            } catch (ExpiredJwtException e) {
+                log.error("JWT Token has expired");
+            }
+        } else {
+            filterChain.doFilter(request, response);
+            return;
         }
 
-
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            log.info("User details loaded: {}", userDetails.getUsername());
 
             if (jwtService.validateToken(jwtToken, userDetails)) {
-
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                log.info("Authentication set in security context : {} ", authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                log.info("Invalid JWT Token");
             }
         }
         filterChain.doFilter(request, response);
     }
+
+
+
+private boolean isJwtToken(String token) {
+    try {
+        // Attempt to parse the token
+        jwtService.extractUsername(token);
+        return true;
+    } catch (Exception e) {
+        return false;
+    }
+}
 }

@@ -7,19 +7,17 @@ import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.repositories.UserRepository;
 import com.marin.quotesdashboardbackend.services.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
-import java.util.Map;
 
 @RestController
 @RequestMapping("api/v1/auth")
@@ -44,7 +42,7 @@ public class AuthController {
         newUser.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         newUser.setRoles(Collections.singletonList("ROLE_USER"));
         userRepository.save(newUser);
-        final var jwt = jwtService.generateToken(newUser.getEmail());
+        final var jwt = jwtService.generateToken(userDetailsService.loadUserByUsername(newUser.getEmail()));
         return ResponseEntity.ok(JwtResponse.builder().jwtToken(jwt).build());
     }
 
@@ -58,20 +56,20 @@ public class AuthController {
         }
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
-        final String jwt = jwtService.generateToken(userDetails.getUsername());
+        final String jwt = jwtService.generateToken(userDetails);
 
         return ResponseEntity.ok(JwtResponse.builder().jwtToken(jwt).build());
     }
 
-    @GetMapping("user")
-    public Map<String, Object> getUser(@AuthenticationPrincipal OAuth2User principal) {
-        if (principal != null) {
-            return Map.of(
-                    "name", principal.getAttribute("name"),
-                    "email", principal.getAttribute("email")
-            );
-        } else {
-            return Map.of("error", "No authenticated useravailable.");
+
+    @PostMapping("/set-password")
+    public ResponseEntity<?> setPassword(@RequestParam String email, @RequestParam String password) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+        return ResponseEntity.ok("Password set successfully");
     }
 }
