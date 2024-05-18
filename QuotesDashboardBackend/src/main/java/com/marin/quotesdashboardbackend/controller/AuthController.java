@@ -7,12 +7,10 @@ import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.repositories.UserRepository;
 import com.marin.quotesdashboardbackend.services.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +40,7 @@ public class AuthController {
         newUser.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         newUser.setRoles(Collections.singletonList("ROLE_USER"));
         userRepository.save(newUser);
-        final var jwt = jwtService.generateToken(userDetailsService.loadUserByUsername(newUser.getEmail()));
+        final var jwt = jwtService.generateToken(newUser);
         return ResponseEntity.ok(JwtResponse.builder().jwtToken(jwt).build());
     }
 
@@ -54,9 +52,10 @@ public class AuthController {
         } catch (AuthenticationException e) {
             throw new RuntimeException("Incorrect username or password", e);
         }
+        final var user = userRepository.findByEmail(authenticationRequest.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
-        final String jwt = jwtService.generateToken(userDetails);
+        final String jwt = jwtService.generateToken(user);
 
         return ResponseEntity.ok(JwtResponse.builder().jwtToken(jwt).build());
     }
@@ -64,10 +63,8 @@ public class AuthController {
 
     @PostMapping("/set-password")
     public ResponseEntity<?> setPassword(@RequestParam String email, @RequestParam String password) {
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email"));
         user.setPassword(passwordEncoder.encode(password));
         userRepository.save(user);
         return ResponseEntity.ok("Password set successfully");

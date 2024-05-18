@@ -30,7 +30,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         String email = oauth2User.getAttribute("email");
         String name = oauth2User.getAttribute("name");
 
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User with email" + email + "not found"));
         if (user == null) {
             user = new User();
             user.setEmail(email);

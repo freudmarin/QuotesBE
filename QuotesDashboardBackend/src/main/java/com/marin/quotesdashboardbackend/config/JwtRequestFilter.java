@@ -8,7 +8,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -33,7 +35,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String requestTokenHeader = request.getHeader("Authorization");
 
         String username = null;
@@ -71,11 +73,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             log.info("User details loaded: {}", userDetails.getUsername());
 
             if (jwtService.validateToken(jwtToken, userDetails)) {
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
+                log.info("Authorities of logged user {} : {}", userDetails.getUsername(), authentication.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                context.setAuthentication(authentication);
+                SecurityContextHolder.setContext(context);
                 log.info("Authentication set in security context : {} ", authentication);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
             } else {
                 log.info("Invalid JWT Token");
             }
@@ -84,14 +89,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
 
-
-private boolean isJwtToken(String token) {
-    try {
-        // Attempt to parse the token
-        jwtService.extractUsername(token);
-        return true;
-    } catch (Exception e) {
-        return false;
+    private boolean isJwtToken(String token) {
+        try {
+            // Attempt to parse the token
+            jwtService.extractUsername(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
-}
 }
