@@ -25,12 +25,11 @@ public class QuoteService {
     private final Quotes apiService;
     private final QuoteRepository quoteRepository;
     private final AuthorRepository authorRepository;
-    private static final String serviceBaseUrl = "http://localhost:8081";
     private final TagRepository tagRepository;
 
     public QuoteService(QuoteRepository quoteRepository, AuthorRepository authorRepository, TagRepository tagRepository) {
         this.authorRepository = authorRepository;
-        this.apiService = RetrofitClient.getClient(serviceBaseUrl).create(Quotes.class);
+        this.apiService = RetrofitClient.getClient().create(Quotes.class);
         this.quoteRepository = quoteRepository;
         this.tagRepository = tagRepository;
     }

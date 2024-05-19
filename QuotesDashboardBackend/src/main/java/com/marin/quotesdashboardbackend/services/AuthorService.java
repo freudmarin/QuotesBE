@@ -25,7 +25,7 @@ public class AuthorService {
     private static final String serviceBaseUrl = "http://localhost:8081";
     private final AuthorRepository authorRepository;
     public AuthorService(AuthorRepository authorRepository) {
-        this.apiService = RetrofitClient.getClient(serviceBaseUrl).create(Authors.class);
+        this.apiService = RetrofitClient.getClient().create(Authors.class);
         this.authorRepository = authorRepository;
     }
 

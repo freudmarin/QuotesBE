@@ -23,12 +23,11 @@ import java.util.stream.Collectors;
 public class TagService {
 
     private final Tags apiService;
-    private static final String serviceBaseUrl = "http://localhost:8081";
     private final TagRepository tagRepository;
 
     public TagService(TagRepository tagRepository) {
         this.tagRepository = tagRepository;
-        this.apiService = RetrofitClient.getClient(serviceBaseUrl).create(Tags.class);
+        this.apiService = RetrofitClient.getClient().create(Tags.class);
     }
 
     public void syncTags() {
