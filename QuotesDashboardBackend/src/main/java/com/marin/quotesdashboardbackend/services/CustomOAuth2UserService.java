@@ -3,6 +3,7 @@ package com.marin.quotesdashboardbackend.services;
 
 import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.repositories.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 
 @Service
+@Slf4j
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
     private final UserRepository userRepository;
 
@@ -26,17 +28,24 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        log.info("Loading user from OAuth2UserRequest");
+
         OAuth2User oauth2User = delegate.loadUser(userRequest);
+        log.info("OAuth2User loaded: {}", oauth2User.getAttributes());
+
         String email = oauth2User.getAttribute("email");
         String name = oauth2User.getAttribute("name");
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User with email" + email + "not found"));
+        User user = userRepository.findByEmail(email).orElse(null);
         if (user == null) {
+            log.info("User not found in database. Creating new user with email: {}", email);
             user = new User();
             user.setEmail(email);
             user.setName(name);
             user.setRoles(Collections.singletonList("ROLE_USER"));
             userRepository.save(user);
+        } else {
+            log.info("User found in database: {}", user);
         }
 
         return new DefaultOAuth2User(

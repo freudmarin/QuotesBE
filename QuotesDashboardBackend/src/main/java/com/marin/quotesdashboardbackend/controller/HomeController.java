@@ -13,10 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class HomeController {
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("")
     public String test() {
         log.info("test");
         return "test endpoint";
+    }
+
+    @GetMapping("/test2")
+    public String test2() {
+        log.info("test2");
+        return "test2 endpoint";
     }
 }

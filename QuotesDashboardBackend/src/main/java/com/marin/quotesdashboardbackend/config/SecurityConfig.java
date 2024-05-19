@@ -29,25 +29,26 @@ public class SecurityConfig {
 
     private final JwtRequestFilter jwtRequestFilter;
 
+    private final CustomGoogleTokenIntrospector customGoogleTokenIntrospector;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "api/v1/auth/**", "/oauth2/**", "login/oauth2/code/google").permitAll()
+                        .requestMatchers("api/v1/auth/**", "/oauth2/**", "login/oauth2/code/google").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint(authz -> authz
-                                .baseUri("/oauth2/authorization/google"))
-                        .redirectionEndpoint(redir -> redir
-                                .baseUri("login/oauth2/code/*"))
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)))
+                        .authorizationEndpoint(authz -> authz.baseUri("/oauth2/authorization/google"))
+                        .redirectionEndpoint(redir -> redir.baseUri("login/oauth2/code/*"))
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                                .opaqueToken(opaqueToken -> opaqueToken
-                                        .introspector(new CustomGoogleTokenIntrospector()))).addFilterBefore(jwtRequestFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                        .opaqueToken(opaqueToken -> opaqueToken.introspector(customGoogleTokenIntrospector))
+                )
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

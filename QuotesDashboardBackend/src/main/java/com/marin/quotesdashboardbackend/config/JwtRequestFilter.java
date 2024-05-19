@@ -35,10 +35,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String requestTokenHeader = request.getHeader("Authorization");
-
+        log.info("Jwt Request filter invoked for URI: {}", request.getRequestURI());
         String username = null;
         String jwtToken = null;
-
         String requestURI = request.getRequestURI();
         if (requestURI.startsWith("/oauth2/") || requestURI.startsWith("/login/oauth2/")) {
             filterChain.doFilter(request, response);
@@ -49,8 +48,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        log.info("Jwt Request filter invoked");
-
         jwtToken = requestTokenHeader.substring(7);
         if (isJwtToken(jwtToken)) {
             try {
@@ -69,20 +66,22 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             log.info("User details loaded: {}", userDetails.getUsername());
+            log.info("User authorities: {}", userDetails.getAuthorities());
 
             if (jwtService.validateToken(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.info("Authentication set in security context: {}", authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.info("Security context authentication: {}", SecurityContextHolder.getContext().getAuthentication());
+                log.info("Granted Authorities: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
             } else {
                 log.info("Invalid JWT Token");
             }
         }
         filterChain.doFilter(request, response);
     }
-
 
     private boolean isJwtToken(String token) {
         try {
