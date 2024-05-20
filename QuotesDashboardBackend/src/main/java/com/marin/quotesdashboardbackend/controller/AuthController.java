@@ -4,14 +4,16 @@ import com.marin.quotesdashboardbackend.dtos.JwtLoginRequest;
 import com.marin.quotesdashboardbackend.dtos.JwtResponse;
 import com.marin.quotesdashboardbackend.dtos.JwtSignupRequest;
 import com.marin.quotesdashboardbackend.entities.User;
+import com.marin.quotesdashboardbackend.exceptions.UnauthorizedException;
 import com.marin.quotesdashboardbackend.repositories.UserRepository;
+import com.marin.quotesdashboardbackend.services.CustomUserDetailsService;
 import com.marin.quotesdashboardbackend.services.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +26,7 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
 
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     private final JwtService jwtService;
 
@@ -40,7 +42,7 @@ public class AuthController {
         newUser.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         newUser.setRoles(Collections.singletonList("ROLE_USER"));
         userRepository.save(newUser);
-        final var jwt = jwtService.generateToken(newUser);
+        final var jwt = jwtService.generateToken(newUser.getUsername());
         return ResponseEntity.ok(JwtResponse.builder().jwtToken(jwt).build());
     }
 
@@ -49,13 +51,11 @@ public class AuthController {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(), authenticationRequest.getPassword()));
-        } catch (AuthenticationException e) {
-            throw new RuntimeException("Incorrect username or password", e);
+        } catch (AuthenticationException e)  {
+            throw new UnauthorizedException("Invalid email or password");
         }
-        final var user = userRepository.findByEmail(authenticationRequest.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        final String jwt = jwtService.generateToken(user);
+        final UserDetails userDetails = customUserDetailsService.loadUserByUsername(authenticationRequest.getEmail());
+        final String jwt = jwtService.generateToken(userDetails.getUsername());
 
         return ResponseEntity.ok(JwtResponse.builder().jwtToken(jwt).build());
     }
