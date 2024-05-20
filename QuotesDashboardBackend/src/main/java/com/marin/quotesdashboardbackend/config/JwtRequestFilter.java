@@ -1,6 +1,7 @@
 package com.marin.quotesdashboardbackend.config;
 
 import com.marin.quotesdashboardbackend.services.JwtService;
+import com.marin.quotesdashboardbackend.services.TokenBlackListService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +26,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final  UserDetailsService userDetailsService;
 
+    private final TokenBlackListService tokenBlackListService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
@@ -38,7 +41,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             username = jwtUtil.extractUsername(jwt);
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null
+        && !tokenBlackListService.isTokenBlacklisted(jwt)) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
             if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
