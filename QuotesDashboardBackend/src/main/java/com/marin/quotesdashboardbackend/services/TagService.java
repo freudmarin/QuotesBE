@@ -1,6 +1,6 @@
 package com.marin.quotesdashboardbackend.services;
 
-import com.marin.quotesdashboardbackend.dtos.TagDTO;
+import com.marin.quotesdashboardbackend.dtos.api.TagDTO;
 import com.marin.quotesdashboardbackend.entities.Tag;
 import com.marin.quotesdashboardbackend.repositories.TagRepository;
 import com.marin.quotesdashboardbackend.retrofit.RetrofitClient;

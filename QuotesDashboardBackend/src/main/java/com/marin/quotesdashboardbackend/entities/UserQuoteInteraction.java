@@ -2,14 +2,17 @@ package com.marin.quotesdashboardbackend.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "user_quote_interactions")
-@SQLRestriction("is_deleted <> true")
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class UserQuoteInteraction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +28,13 @@ public class UserQuoteInteraction {
 
     private boolean liked;
     private boolean shared;
+
+    public UserQuoteInteraction(User user, boolean liked, Quote quote, boolean shared) {
+        this.user = user;
+        this.liked = liked;
+        this.quote = quote;
+        this.shared = shared;
+    }
 
     // Getters and setters
 }

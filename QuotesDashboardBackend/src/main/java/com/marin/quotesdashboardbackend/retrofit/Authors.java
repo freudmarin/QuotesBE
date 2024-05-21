@@ -1,6 +1,6 @@
 package com.marin.quotesdashboardbackend.retrofit;
 
-import com.marin.quotesdashboardbackend.dtos.AuthorPageDTO;
+import com.marin.quotesdashboardbackend.dtos.api.AuthorPageDTO;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;

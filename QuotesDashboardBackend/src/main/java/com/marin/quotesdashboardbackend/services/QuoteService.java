@@ -1,6 +1,7 @@
 package com.marin.quotesdashboardbackend.services;
 
-import com.marin.quotesdashboardbackend.dtos.QuoteDTO;
+import com.marin.quotesdashboardbackend.dtos.DTOMappings;
+import com.marin.quotesdashboardbackend.dtos.api.QuoteDTO;
 import com.marin.quotesdashboardbackend.entities.Author;
 import com.marin.quotesdashboardbackend.entities.Quote;
 import com.marin.quotesdashboardbackend.entities.Tag;
@@ -9,6 +10,7 @@ import com.marin.quotesdashboardbackend.repositories.QuoteRepository;
 import com.marin.quotesdashboardbackend.repositories.TagRepository;
 import com.marin.quotesdashboardbackend.retrofit.Quotes;
 import com.marin.quotesdashboardbackend.retrofit.RetrofitClient;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import retrofit2.Response;
@@ -92,5 +94,13 @@ public class QuoteService {
         } catch (IOException e) {
             log.error("Error fetching quotes: {}", e.getMessage(), e);
         }
+    }
+
+        public Quote findQuoteById (Long id) {
+            return quoteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Quote not found"));
+        }
+
+    public List<com.marin.quotesdashboardbackend.dtos.QuoteDTO> getQuotesByTags(List<String> tagNames) {
+        return quoteRepository.findByTagNames(tagNames).stream().map(DTOMappings::fromQuoteToQuoteDTO).collect(Collectors.toList());
     }
 }

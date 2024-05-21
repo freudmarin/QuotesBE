@@ -1,4 +1,4 @@
-package com.marin.quotesdashboardbackend.dtos;
+package com.marin.quotesdashboardbackend.dtos.api;
 
 import lombok.Getter;
 

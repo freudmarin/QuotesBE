@@ -1,12 +1,15 @@
 package com.marin.quotesdashboardbackend.dtos;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.List;
-
 @Getter
+@AllArgsConstructor
 public class QuoteDTO {
-    private String content;
-    private String author;
-    List<String> tags;
+    private Long id;
+
+    private String text;
+
+    private AuthorDTO author;
+
 }

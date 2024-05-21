@@ -1,6 +1,6 @@
 package com.marin.quotesdashboardbackend.retrofit;
 
-import com.marin.quotesdashboardbackend.dtos.TagDTO;
+import com.marin.quotesdashboardbackend.dtos.api.TagDTO;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;

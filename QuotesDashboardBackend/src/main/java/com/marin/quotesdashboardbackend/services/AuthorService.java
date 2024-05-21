@@ -1,7 +1,7 @@
 package com.marin.quotesdashboardbackend.services;
 
-import com.marin.quotesdashboardbackend.dtos.AuthorDTO;
-import com.marin.quotesdashboardbackend.dtos.AuthorPageDTO;
+import com.marin.quotesdashboardbackend.dtos.api.AuthorDTO;
+import com.marin.quotesdashboardbackend.dtos.api.AuthorPageDTO;
 import com.marin.quotesdashboardbackend.entities.Author;
 import com.marin.quotesdashboardbackend.repositories.AuthorRepository;
 import com.marin.quotesdashboardbackend.retrofit.Authors;
@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class AuthorService {
 
     private final Authors apiService;
-    private static final String serviceBaseUrl = "http://localhost:8081";
     private final AuthorRepository authorRepository;
     public AuthorService(AuthorRepository authorRepository) {
         this.apiService = RetrofitClient.getClient().create(Authors.class);
