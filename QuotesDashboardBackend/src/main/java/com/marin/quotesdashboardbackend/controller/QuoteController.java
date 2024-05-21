@@ -5,6 +5,7 @@ import com.marin.quotesdashboardbackend.entities.Quote;
 import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.services.CustomUserDetailsService;
 import com.marin.quotesdashboardbackend.services.QuoteService;
+import com.marin.quotesdashboardbackend.services.RecommenadationService;
 import com.marin.quotesdashboardbackend.services.UserQuoteInteractionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/quotes")
+@RequestMapping("api/v1/quotes")
 @RequiredArgsConstructor
 public class QuoteController {
 
@@ -24,6 +25,8 @@ public class QuoteController {
     private final QuoteService quoteService;
 
     private final CustomUserDetailsService userDetailsService;
+
+    private final RecommenadationService recommenadationService;
 
     @PostMapping("{quoteId}/like")
     @PreAuthorize("hasRole('USER')")
@@ -48,5 +51,20 @@ public class QuoteController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<QuoteDTO>> getQuotesByTags(@RequestParam List<String> tags) {
         return ResponseEntity.ok(quoteService.getQuotesByTags(tags));
+    }
+
+    @GetMapping("{quoteId}/likes-count")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Integer> getLikesCount(@PathVariable Long quoteId) {
+        int likesCount = quoteService.getLikesCount(quoteId);
+        return ResponseEntity.ok(likesCount);
+    }
+
+    @GetMapping("recommendations")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<QuoteDTO>> getRecommendations(@AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
+        User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
+        List<QuoteDTO> recommendations = recommenadationService.recommendQuotes(user);
+        return ResponseEntity.ok(recommendations);
     }
 }

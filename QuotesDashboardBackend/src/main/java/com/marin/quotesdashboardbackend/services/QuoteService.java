@@ -8,6 +8,7 @@ import com.marin.quotesdashboardbackend.entities.Tag;
 import com.marin.quotesdashboardbackend.repositories.AuthorRepository;
 import com.marin.quotesdashboardbackend.repositories.QuoteRepository;
 import com.marin.quotesdashboardbackend.repositories.TagRepository;
+import com.marin.quotesdashboardbackend.repositories.UserQuoteInteractionRepository;
 import com.marin.quotesdashboardbackend.retrofit.Quotes;
 import com.marin.quotesdashboardbackend.retrofit.RetrofitClient;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,9 +29,11 @@ public class QuoteService {
     private final QuoteRepository quoteRepository;
     private final AuthorRepository authorRepository;
     private final TagRepository tagRepository;
+    private final UserQuoteInteractionRepository interactionRepository;
 
-    public QuoteService(QuoteRepository quoteRepository, AuthorRepository authorRepository, TagRepository tagRepository) {
+    public QuoteService(QuoteRepository quoteRepository, AuthorRepository authorRepository, TagRepository tagRepository, UserQuoteInteractionRepository interactionRepository) {
         this.authorRepository = authorRepository;
+        this.interactionRepository = interactionRepository;
         this.apiService = RetrofitClient.getClient().create(Quotes.class);
         this.quoteRepository = quoteRepository;
         this.tagRepository = tagRepository;
@@ -102,5 +105,10 @@ public class QuoteService {
 
     public List<com.marin.quotesdashboardbackend.dtos.QuoteDTO> getQuotesByTags(List<String> tagNames) {
         return quoteRepository.findByTagNames(tagNames).stream().map(DTOMappings::fromQuoteToQuoteDTO).collect(Collectors.toList());
+    }
+
+    public int getLikesCount(Long quoteId) {
+        Quote quote = quoteRepository.findById(quoteId).orElseThrow(() -> new EntityNotFoundException("Quote not found"));
+        return interactionRepository.countByQuoteAndLikedTrue(quote);
     }
 }
