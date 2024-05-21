@@ -26,7 +26,4 @@ public class RecommenadationService {
                 .collect(Collectors.toList());
         return recommendedQuotes;
     }
-
-
-
 }

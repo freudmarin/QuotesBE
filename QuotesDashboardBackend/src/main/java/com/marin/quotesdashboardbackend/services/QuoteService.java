@@ -12,7 +12,9 @@ import com.marin.quotesdashboardbackend.repositories.UserQuoteInteractionReposit
 import com.marin.quotesdashboardbackend.retrofit.Quotes;
 import com.marin.quotesdashboardbackend.retrofit.RetrofitClient;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import retrofit2.Response;
 
@@ -30,6 +32,7 @@ public class QuoteService {
     private final AuthorRepository authorRepository;
     private final TagRepository tagRepository;
     private final UserQuoteInteractionRepository interactionRepository;
+    private Quote quoteOfTheDay;
 
     public QuoteService(QuoteRepository quoteRepository, AuthorRepository authorRepository, TagRepository tagRepository, UserQuoteInteractionRepository interactionRepository) {
         this.authorRepository = authorRepository;
@@ -99,9 +102,9 @@ public class QuoteService {
         }
     }
 
-        public Quote findQuoteById (Long id) {
-            return quoteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Quote not found"));
-        }
+    public Quote findQuoteById(Long id) {
+        return quoteRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Quote not found"));
+    }
 
     public List<com.marin.quotesdashboardbackend.dtos.QuoteDTO> getQuotesByTags(List<String> tagNames) {
         return quoteRepository.findByTagNames(tagNames).stream().map(DTOMappings::fromQuoteToQuoteDTO).collect(Collectors.toList());
@@ -110,5 +113,17 @@ public class QuoteService {
     public int getLikesCount(Long quoteId) {
         Quote quote = quoteRepository.findById(quoteId).orElseThrow(() -> new EntityNotFoundException("Quote not found"));
         return interactionRepository.countByQuoteAndLikedTrue(quote);
+    }
+
+    @Transactional
+    @Scheduled(cron = "0 0 0 * * ?")  // Runs every day at midnight
+    public com.marin.quotesdashboardbackend.dtos.QuoteDTO selectQuoteOfTheDay() {
+        List<Quote> quotes = quoteRepository.findAll();
+        if (!quotes.isEmpty()) {
+            Random random = new Random();
+            quoteOfTheDay = quotes.get(random.nextInt(quotes.size()));
+        }
+
+        return DTOMappings.fromQuoteToQuoteDTO(quoteOfTheDay);
     }
 }

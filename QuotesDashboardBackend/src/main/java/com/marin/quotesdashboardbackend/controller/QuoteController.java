@@ -67,4 +67,10 @@ public class QuoteController {
         List<QuoteDTO> recommendations = recommenadationService.recommendQuotes(user);
         return ResponseEntity.ok(recommendations);
     }
+
+    @GetMapping("quote-of-the-day")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<QuoteDTO> getQuoteOfTheDay() {
+        return ResponseEntity.ok(quoteService.selectQuoteOfTheDay());
+    }
 }
