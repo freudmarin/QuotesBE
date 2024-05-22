@@ -37,17 +37,18 @@ public class CommentController {
     }
 
     @PutMapping("{commentId}")
-    public CommentDTO updateComment(@PathVariable Long commentId, @RequestBody Map<String, String> requestBody,
+    public ResponseEntity<CommentDTO> updateComment(@PathVariable Long commentId, @RequestBody Map<String, String> requestBody,
                                     @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
         String content = requestBody.get("content");
         User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
-        return commentService.updateComment(commentId, user, content);
+        return ResponseEntity.ok(commentService.updateComment(commentId, user, content));
     }
 
     @DeleteMapping("{commentId}")
-    public void deleteComment(@PathVariable Long commentId,
+    public ResponseEntity<?> deleteComment(@PathVariable Long commentId,
                               @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
         User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
         commentService.deleteComment(commentId, user);
+        return ResponseEntity.noContent().build();
     }
 }
