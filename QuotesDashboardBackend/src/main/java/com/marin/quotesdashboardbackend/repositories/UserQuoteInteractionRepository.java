@@ -5,6 +5,7 @@ import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.entities.UserQuoteInteraction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,13 @@ public interface UserQuoteInteractionRepository extends JpaRepository<UserQuoteI
             "AND ui.user.id != :userId AND ui.liked = true")
     List<User> findUsersWithSimilarInterests(Long userId);
 
+
+    @Query("SELECT u FROM UserQuoteInteraction ui JOIN ui.user u WHERE ui.quote = :quote AND ui.liked = true")
+    List<User> findUsersByQuoteAndLikedTrue(@Param("quote") Quote quote);
+
+    List<UserQuoteInteraction> findByUserAndLikedTrue(User user);
+
     @Query("SELECT ui.quote FROM UserQuoteInteraction ui WHERE ui.user = :user AND ui.liked = true")
-    List<Quote> findByUserAndLikedTrue(User user);
+    List<Quote> findQuotesByUserAndLikedTrue(@Param("user") User user);
+
 }
