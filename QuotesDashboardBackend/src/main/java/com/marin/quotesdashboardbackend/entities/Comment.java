@@ -5,14 +5,18 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
+
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user_quote_interactions")
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-public class UserQuoteInteraction {
+@Table(name = "comments")
+@AllArgsConstructor
+@NoArgsConstructor
+@SQLRestriction("is_deleted <> true")
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,15 +29,14 @@ public class UserQuoteInteraction {
     @JoinColumn(name = "quote_id")
     private Quote quote;
 
-    private boolean liked;
-    private boolean shared;
+    private String content;
 
-    public UserQuoteInteraction(User user, boolean liked, Quote quote, boolean shared) {
-        this.user = user;
-        this.liked = liked;
-        this.quote = quote;
-        this.shared = shared;
-    }
+    @Column(name = "added_at")
+    private LocalDateTime addedAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
-    // Getters and setters
+    @Column(name = "is_deleted")
+    private boolean isDeleted;
+
 }
