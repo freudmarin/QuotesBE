@@ -5,6 +5,7 @@ import com.marin.quotesdashboardbackend.dtos.DTOMappings;
 import com.marin.quotesdashboardbackend.dtos.QuoteDTO;
 import com.marin.quotesdashboardbackend.entities.Quote;
 import com.marin.quotesdashboardbackend.entities.User;
+import com.marin.quotesdashboardbackend.entities.UserQuoteInteraction;
 import com.marin.quotesdashboardbackend.repositories.QuoteRepository;
 import com.marin.quotesdashboardbackend.repositories.UserQuoteInteractionRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,35 +20,50 @@ import java.util.stream.Collectors;
 public class ItemBasedCollaborativeFiltering {
 
     private final UserQuoteInteractionRepository interactionRepository;
-
     private final QuoteRepository quoteRepository;
 
     public List<QuoteDTO> recommendQuotes(User user) {
-        List<Quote> likedQuotes = interactionRepository.findQuotesByUserAndLikedTrue(user);
-        Map<Quote, Double> quoteScores = new HashMap<>();
+        List<Quote> likedQuotes = interactionRepository.findByUserAndLikedTrue(user)
+                .stream()
+                .map(UserQuoteInteraction::getQuote)
+                .toList();
 
-        for (Quote quote : quoteRepository.findAll()) {
-            double score = 0.0;
-            for (Quote likedQuote : likedQuotes) {
-                score += calculateCosineSimilarity(quote, likedQuote);
-            }
-            quoteScores.put(quote, score);
+        List<UserQuoteInteraction> allInteractions = interactionRepository.findAllLikedInteractions();
+
+        // Map of quotes to users who liked them
+        Map<Quote, Set<User>> quoteToUsersMap = new HashMap<>();
+        for (UserQuoteInteraction interaction : allInteractions) {
+            quoteToUsersMap
+                    .computeIfAbsent(interaction.getQuote(), k -> new HashSet<>())
+                    .add(interaction.getUser());
         }
 
-        return quoteScores.entrySet().stream()
+        Map<Quote, Double> quoteScores = new HashMap<>();
+        for (Quote quote : quoteRepository.findAllWithTagsAndAuthors()) {
+            if (!likedQuotes.contains(quote)) {
+                double score = 0.0;
+                for (Quote likedQuote : likedQuotes) {
+                    score += calculateCosineSimilarity(quote, likedQuote, quoteToUsersMap);
+                }
+                quoteScores.put(quote, score);
+            }
+        }
+
+        var quotesToRecommend = quoteScores.entrySet().stream()
                 .sorted(Map.Entry.<Quote, Double>comparingByValue().reversed())
-                .limit(10) // Get top 10 recommended quotes
+                .limit(10)
                 .map(Map.Entry::getKey)
                 .map(DTOMappings::fromQuoteToQuoteDTO)
-                .collect(Collectors.toList());
+                .toList();
+        log.info("Recommended quotes in item-based collaborative filtering: {}", quotesToRecommend.size());
+        return quotesToRecommend;
     }
 
-    private double calculateCosineSimilarity(Quote quote1, Quote quote2) {
-        List<User> users1 = interactionRepository.findUsersByQuoteAndLikedTrue(quote1);
-        List<User> users2 = interactionRepository.findUsersByQuoteAndLikedTrue(quote2);
+    private double calculateCosineSimilarity(Quote quote1, Quote quote2, Map<Quote, Set<User>> quoteToUsersMap) {
+        Set<User> users1 = quoteToUsersMap.getOrDefault(quote1, Collections.emptySet());
+        Set<User> users2 = quoteToUsersMap.getOrDefault(quote2, Collections.emptySet());
 
-        Set<User> allUsers = new HashSet<>();
-        allUsers.addAll(users1);
+        Set<User> allUsers = new HashSet<>(users1);
         allUsers.addAll(users2);
 
         int[] vector1 = new int[allUsers.size()];
@@ -75,10 +90,6 @@ public class ItemBasedCollaborativeFiltering {
             return 0.0;
         }
 
-        double cosineSimilarity = dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
-
-        log.info("Cosine Similarity: {}", cosineSimilarity);
-
-        return cosineSimilarity;
+        return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
     }
 }

@@ -3,6 +3,7 @@ package com.marin.quotesdashboardbackend.services.recommendation;
 
 import com.marin.quotesdashboardbackend.dtos.DTOMappings;
 import com.marin.quotesdashboardbackend.dtos.QuoteDTO;
+import com.marin.quotesdashboardbackend.entities.Quote;
 import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.entities.UserQuoteInteraction;
 import com.marin.quotesdashboardbackend.repositories.UserQuoteInteractionRepository;
@@ -20,61 +21,65 @@ import java.util.stream.Collectors;
 public class UserBasedCollaborativeFiltering {
 
     private final UserRepository userRepository;
-
     private final UserQuoteInteractionRepository interactionRepository;
-
 
     public List<QuoteDTO> recommendQuotes(User user) {
         List<User> users = userRepository.findAll();
-        Map<User, Double> similarityScores = new HashMap<>();
+        List<UserQuoteInteraction> allInteractions = interactionRepository.findAllLikedInteractions();
 
+        Map<User, List<Quote>> userToQuotesMap = new HashMap<>();
+        for (UserQuoteInteraction interaction : allInteractions) {
+            userToQuotesMap.computeIfAbsent(interaction.getUser(), k -> new ArrayList<>()).add(interaction.getQuote());
+        }
+
+        Map<User, Double> similarityScores = new HashMap<>();
         for (User otherUser : users) {
             if (!otherUser.equals(user)) {
-                double similarity = calculatePearsonCorrelation(user, otherUser);
+                double similarity = calculatePearsonCorrelation(user, otherUser, userToQuotesMap);
                 similarityScores.put(otherUser, similarity);
             }
         }
 
         List<User> mostSimilarUsers = similarityScores.entrySet().stream()
                 .sorted(Map.Entry.<User, Double>comparingByValue().reversed())
-                .limit(5) // Get top 5 most similar users
+                .limit(5)
                 .map(Map.Entry::getKey)
                 .toList();
 
-        return mostSimilarUsers.stream()
-                .flatMap(similarUser -> interactionRepository.findByUserAndLikedTrue(similarUser).stream()
-                        .map(UserQuoteInteraction::getQuote))
-                .distinct()
+        Set<Quote> recommendedQuotes = new HashSet<>();
+        for (User similarUser : mostSimilarUsers) {
+            recommendedQuotes.addAll(userToQuotesMap.getOrDefault(similarUser, Collections.emptyList()));
+        }
+
+        userToQuotesMap.getOrDefault(user, Collections.emptyList()).forEach(recommendedQuotes::remove);
+
+        List<QuoteDTO> quotesToRecommend = recommendedQuotes.stream()
                 .map(DTOMappings::fromQuoteToQuoteDTO)
                 .collect(Collectors.toList());
+
+        log.info("User-based collaborative filtering quotes size: {}", quotesToRecommend.size());
+        log.info("User-based collaborative filtering quotes: {}", quotesToRecommend);
+
+        return quotesToRecommend;
     }
 
-    private double calculatePearsonCorrelation(User user1, User user2) {
-        List<UserQuoteInteraction> user1Interactions = interactionRepository.findByUserAndLikedTrue(user1);
-        List<UserQuoteInteraction> user2Interactions = interactionRepository.findByUserAndLikedTrue(user2);
+    private double calculatePearsonCorrelation(User user1, User user2, Map<User, List<Quote>> userToQuotesMap) {
+        List<Quote> user1Quotes = userToQuotesMap.getOrDefault(user1, Collections.emptyList());
+        List<Quote> user2Quotes = userToQuotesMap.getOrDefault(user2, Collections.emptyList());
 
-        Map<Long, Boolean> user1LikedQuotes = user1Interactions.stream()
-                .collect(Collectors.toMap(interaction -> interaction.getQuote().getId(), UserQuoteInteraction::isLiked));
+        Set<Quote> commonQuotes = new HashSet<>(user1Quotes);
+        commonQuotes.retainAll(user2Quotes);
 
-        Map<Long, Boolean> user2LikedQuotes = user2Interactions.stream()
-                .collect(Collectors.toMap(interaction -> interaction.getQuote().getId(), UserQuoteInteraction::isLiked));
-
-        Set<Long> commonQuoteIds = new HashSet<>(user1LikedQuotes.keySet());
-        commonQuoteIds.retainAll(user2LikedQuotes.keySet());
-
-        if (commonQuoteIds.isEmpty()) {
+        if (commonQuotes.isEmpty()) {
             return 0.0;
         }
 
-        int n = commonQuoteIds.size();
-
-        int sum1 = commonQuoteIds.stream().mapToInt(quoteId -> user1LikedQuotes.get(quoteId) ? 1 : 0).sum();
-        int sum2 = commonQuoteIds.stream().mapToInt(quoteId -> user2LikedQuotes.get(quoteId) ? 1 : 0).sum();
-
-        int sum1Sq = commonQuoteIds.stream().mapToInt(quoteId -> (user1LikedQuotes.get(quoteId) ? 1 : 0) * (user1LikedQuotes.get(quoteId) ? 1 : 0)).sum();
-        int sum2Sq = commonQuoteIds.stream().mapToInt(quoteId -> (user2LikedQuotes.get(quoteId) ? 1 : 0) * (user2LikedQuotes.get(quoteId) ? 1 : 0)).sum();
-
-        int pSum = commonQuoteIds.stream().mapToInt(quoteId -> (user1LikedQuotes.get(quoteId) ? 1 : 0) * (user2LikedQuotes.get(quoteId) ? 1 : 0)).sum();
+        int n = commonQuotes.size();
+        int sum1 = user1Quotes.stream().mapToInt(quote -> commonQuotes.contains(quote) ? 1 : 0).sum();
+        int sum2 = user2Quotes.stream().mapToInt(quote -> commonQuotes.contains(quote) ? 1 : 0).sum();
+        int sum1Sq = user1Quotes.stream().mapToInt(quote -> commonQuotes.contains(quote) ? 1 : 0).map(x -> x * x).sum();
+        int sum2Sq = user2Quotes.stream().mapToInt(quote -> commonQuotes.contains(quote) ? 1 : 0).map(x -> x * x).sum();
+        int pSum = commonQuotes.stream().mapToInt(quote -> (user1Quotes.contains(quote) ? 1 : 0) * (user2Quotes.contains(quote) ? 1 : 0)).sum();
 
         double num = pSum - (sum1 * sum2 / (double) n);
         double den = Math.sqrt((sum1Sq - (sum1 * sum1 / (double) n)) * (sum2Sq - (sum2 * sum2 / (double) n)));
@@ -84,8 +89,9 @@ public class UserBasedCollaborativeFiltering {
             return 0.0;
         }
 
-        log.info("Pearson Correlation: {}", num/den);
+        double correlation = num / den;
+        log.info("Pearson Correlation: {}", correlation);
 
-        return num / den;
+        return correlation;
     }
 }

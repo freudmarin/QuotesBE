@@ -9,7 +9,7 @@ public class RecommendationStrategyFactory {
 
     private final UserBasedCollaborativeFilteringStrategy userBasedCollaborativeFiltering;
 
-    private final ContentBasedFilteringStrategy itemBasedCollaborativeFiltering;
+    private final ItemBasedCollaborativeFilteringStrategy itemBasedCollaborativeFiltering;
     private final ContentBasedFilteringStrategy contentBasedFiltering;
 
     public RecommendationStrategy getStrategy(String type) {

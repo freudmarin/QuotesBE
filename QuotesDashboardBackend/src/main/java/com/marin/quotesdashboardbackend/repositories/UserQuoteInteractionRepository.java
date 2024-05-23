@@ -21,13 +21,13 @@ public interface UserQuoteInteractionRepository extends JpaRepository<UserQuoteI
             "AND ui.user.id != :userId AND ui.liked = true")
     List<User> findUsersWithSimilarInterests(Long userId);
 
-
-    @Query("SELECT u FROM UserQuoteInteraction ui JOIN ui.user u WHERE ui.quote = :quote AND ui.liked = true")
-    List<User> findUsersByQuoteAndLikedTrue(@Param("quote") Quote quote);
-
-    List<UserQuoteInteraction> findByUserAndLikedTrue(User user);
-
     @Query("SELECT ui.quote FROM UserQuoteInteraction ui WHERE ui.user = :user AND ui.liked = true")
     List<Quote> findQuotesByUserAndLikedTrue(@Param("user") User user);
+
+    @Query("SELECT ui FROM UserQuoteInteraction ui WHERE ui.user = :user AND ui.liked = true")
+    List<UserQuoteInteraction> findByUserAndLikedTrue(@Param("user") User user);
+
+    @Query("SELECT ui FROM UserQuoteInteraction ui JOIN FETCH ui.quote WHERE ui.liked = true")
+    List<UserQuoteInteraction> findAllLikedInteractions();
 
 }

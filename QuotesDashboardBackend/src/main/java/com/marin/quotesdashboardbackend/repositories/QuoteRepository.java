@@ -16,4 +16,8 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
 
     @Query("SELECT q FROM Quote q JOIN q.tags t WHERE t.name IN :tagNames GROUP BY q.id")
     List<Quote> findByTagNames(@Param("tagNames") List<String> tagNames);
+
+
+    @Query("SELECT q FROM Quote q JOIN FETCH q.author JOIN FETCH q.tags")
+    List<Quote> findAllWithTagsAndAuthors();
 }

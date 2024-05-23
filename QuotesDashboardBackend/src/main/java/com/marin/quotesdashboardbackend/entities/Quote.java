@@ -52,4 +52,9 @@ public class Quote {
     public int hashCode() {
         return Objects.hash(getId(), getText(), getAuthor());
     }
+
+    @Override
+    public String toString() {
+        return "[ Quote :" + this.id + "," + this.text + "," + this.author + "]";
+    }
 }

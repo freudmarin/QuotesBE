@@ -5,7 +5,7 @@ import com.marin.quotesdashboardbackend.entities.Quote;
 import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.services.CustomUserDetailsService;
 import com.marin.quotesdashboardbackend.services.QuoteService;
-import com.marin.quotesdashboardbackend.services.RecommenadationService;
+import com.marin.quotesdashboardbackend.services.RecommendationService;
 import com.marin.quotesdashboardbackend.services.UserQuoteInteractionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +26,7 @@ public class QuoteController {
 
     private final CustomUserDetailsService userDetailsService;
 
-    private final RecommenadationService recommenadationService;
+    private final RecommendationService recommenadationService;
 
     @PostMapping("{quoteId}/like")
     @PreAuthorize("hasRole('USER')")
