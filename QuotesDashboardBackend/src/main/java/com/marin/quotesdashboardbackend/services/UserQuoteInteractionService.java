@@ -7,6 +7,8 @@ import com.marin.quotesdashboardbackend.repositories.UserQuoteInteractionReposit
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class UserQuoteInteractionService {
@@ -17,13 +19,17 @@ public class UserQuoteInteractionService {
         UserQuoteInteraction interaction = repository.findByUserAndQuote(user, quote)
                 .orElse(new UserQuoteInteraction(user , true, quote, false));
         interaction.setLiked(true);
+        interaction.setAddedAt(LocalDateTime.now());
         repository.save(interaction);
     }
 
     public void unlikeQuote(User user, Quote quote) {
         repository.findByUserAndQuote(user, quote).ifPresent(interaction -> {
-            interaction.setLiked(false);
-            repository.save(interaction);
+            if (interaction.isLiked()) {
+                interaction.setLiked(false);
+                interaction.setUpdatedAt(LocalDateTime.now());
+                repository.save(interaction);
+            }
         });
     }
 }

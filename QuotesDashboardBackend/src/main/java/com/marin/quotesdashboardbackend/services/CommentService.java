@@ -55,5 +55,6 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndUser(commentId, user)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found or user not authorized"));
         comment.setDeleted(true);
+        comment.setUpdatedAt(LocalDateTime.now());
     }
 }
