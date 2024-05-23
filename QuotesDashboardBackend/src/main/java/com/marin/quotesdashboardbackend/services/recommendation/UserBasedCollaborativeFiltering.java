@@ -51,7 +51,7 @@ public class UserBasedCollaborativeFiltering {
             recommendedQuotes.addAll(userToQuotesMap.getOrDefault(similarUser, Collections.emptyList()));
         }
 
-        userToQuotesMap.getOrDefault(user, Collections.emptyList()).forEach(recommendedQuotes::remove);
+        //userToQuotesMap.getOrDefault(user, Collections.emptyList()).forEach(recommendedQuotes::remove);
 
         List<QuoteDTO> quotesToRecommend = recommendedQuotes.stream()
                 .map(DTOMappings::fromQuoteToQuoteDTO)

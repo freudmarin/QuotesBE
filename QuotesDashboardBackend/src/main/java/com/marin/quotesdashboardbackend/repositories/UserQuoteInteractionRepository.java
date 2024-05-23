@@ -30,4 +30,6 @@ public interface UserQuoteInteractionRepository extends JpaRepository<UserQuoteI
     @Query("SELECT ui FROM UserQuoteInteraction ui JOIN FETCH ui.quote WHERE ui.liked = true")
     List<UserQuoteInteraction> findAllLikedInteractions();
 
+    List<UserQuoteInteraction> findByUserInOrderByAddedAtDesc(List<User> users);
+
 }

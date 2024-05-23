@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "user_quote_interactions")
 @AllArgsConstructor
@@ -27,6 +29,11 @@ public class UserQuoteInteraction {
 
     private boolean liked;
     private boolean shared;
+
+    @Column(name = "added_at")
+    private LocalDateTime addedAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public UserQuoteInteraction(User user, boolean liked, Quote quote, boolean shared) {
         this.user = user;
