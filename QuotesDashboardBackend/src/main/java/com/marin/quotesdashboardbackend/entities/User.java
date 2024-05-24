@@ -8,7 +8,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Getter
@@ -38,6 +40,30 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     @ToString.Exclude
     private List<UserQuoteInteraction> interactions;
+
+    // New fields
+    private String profilePictureUrl;
+    private String bio;
+
+    @ElementCollection
+    private List<String> socialLinks;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_preferences",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> favoriteTags = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_favorite_authors",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "author_id")
+    )
+    private Set<Author> favoriteAuthors = new HashSet<>();
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
