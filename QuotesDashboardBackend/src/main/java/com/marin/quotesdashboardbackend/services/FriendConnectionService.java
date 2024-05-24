@@ -1,6 +1,5 @@
 package com.marin.quotesdashboardbackend.services;
 
-
 import com.marin.quotesdashboardbackend.dtos.DTOMappings;
 import com.marin.quotesdashboardbackend.dtos.FriendConnectionDTO;
 import com.marin.quotesdashboardbackend.entities.FriendConnection;
@@ -8,6 +7,8 @@ import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.enums.FriendConnectionStatus;
 import com.marin.quotesdashboardbackend.repositories.FriendConnectionRepository;
 import com.marin.quotesdashboardbackend.repositories.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -56,7 +57,7 @@ public class FriendConnectionService {
     }
 
     public List<FriendConnectionDTO> getFriendsWithDTO() {
-       return getFriends().stream().map(DTOMappings::fromFriendConnectionToFriendConnectionDTO)
+        return getFriends().stream().map(DTOMappings::fromFriendConnectionToFriendConnectionDTO)
                 .toList();
     }
 
@@ -65,5 +66,23 @@ public class FriendConnectionService {
         return connectionRepository.findByFriendAndStatus(user, FriendConnectionStatus.PENDING)
                 .stream().map(DTOMappings::fromFriendConnectionToFriendConnectionDTO)
                 .toList();
+    }
+
+    public Integer countFriends() {
+        User user = getLoggedInUser();
+        return connectionRepository.countByUserAndStatus(user, FriendConnectionStatus.ACCEPTED);
+    }
+
+    @Transactional
+    public void unfriend(Long friendId) {
+        User user = getLoggedInUser();
+        User friend = userRepository.findById(friendId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        FriendConnection friendConnection = connectionRepository.findByUserAndFriendAndStatus(user, friend, FriendConnectionStatus.ACCEPTED);
+        if (friendConnection != null) {
+            friendConnection.setStatus(FriendConnectionStatus.REMOVED);
+            connectionRepository.save(friendConnection);
+        } else {
+            throw new EntityNotFoundException("Friend connection not found");
+        }
     }
 }

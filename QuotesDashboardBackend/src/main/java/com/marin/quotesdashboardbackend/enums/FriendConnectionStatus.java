@@ -1,5 +1,5 @@
 package com.marin.quotesdashboardbackend.enums;
 
 public enum FriendConnectionStatus {
-    PENDING, ACCEPTED, REJECTED;
+    PENDING, ACCEPTED, REJECTED, REMOVED
 }

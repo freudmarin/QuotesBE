@@ -25,5 +25,6 @@ public class FriendConnection {
     @JoinColumn(name = "friend_id")
     private User friend;
 
+    @Enumerated(EnumType.STRING)
     private FriendConnectionStatus status;
 }

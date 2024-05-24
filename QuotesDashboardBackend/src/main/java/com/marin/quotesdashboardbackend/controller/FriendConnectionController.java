@@ -42,4 +42,15 @@ public class FriendConnectionController {
     public ResponseEntity<List<FriendConnectionDTO>> getPendingRequests() {
         return ResponseEntity.ok(connectionService.getPendingRequests());
     }
+
+    @GetMapping("friends-count")
+    public ResponseEntity<Integer> getFriendsCount() {
+        return ResponseEntity.ok(connectionService.countFriends());
+    }
+
+    @DeleteMapping("unfriend/{friendId}")
+    public ResponseEntity<Void> unfriend(@PathVariable("friendId") Long friendId) {
+        connectionService.unfriend(friendId);
+        return ResponseEntity.noContent().build();
+    }
 }
