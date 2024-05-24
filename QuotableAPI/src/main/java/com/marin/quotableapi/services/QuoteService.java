@@ -1,8 +1,8 @@
 package com.marin.quotableapi.services;
 
 import com.marin.quotableapi.models.Quote;
-import com.marin.quotableapi.models.SearchQuotesResponse;
 import com.marin.quotableapi.models.QuotePage;
+import com.marin.quotableapi.models.SearchQuotesResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;

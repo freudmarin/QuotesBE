@@ -1,9 +1,9 @@
 package com.marin.quotableapi.controllers;
 
-import com.marin.quotableapi.services.TagService;
 import com.marin.quotableapi.enums.Order;
 import com.marin.quotableapi.enums.SortBy;
 import com.marin.quotableapi.models.Tag;
+import com.marin.quotableapi.services.TagService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

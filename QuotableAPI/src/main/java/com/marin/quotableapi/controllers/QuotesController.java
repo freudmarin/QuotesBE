@@ -1,8 +1,8 @@
 package com.marin.quotableapi.controllers;
 
-import com.marin.quotableapi.models.SearchQuotesResponse;
 import com.marin.quotableapi.models.Quote;
 import com.marin.quotableapi.models.QuotePage;
+import com.marin.quotableapi.models.SearchQuotesResponse;
 import com.marin.quotableapi.services.QuoteService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
