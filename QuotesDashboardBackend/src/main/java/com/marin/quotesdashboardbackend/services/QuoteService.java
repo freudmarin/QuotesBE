@@ -126,4 +126,31 @@ public class QuoteService {
 
         return DTOMappings.fromQuoteToQuoteDTO(quoteOfTheDay);
     }
+
+    public List<com.marin.quotesdashboardbackend.dtos.QuoteDTO> searchQuotes(String text, String author, List<String> tagNames) {
+        List<Object[]> quotes = quoteRepository.findQuotes(text, author, tagNames);
+        return quotes.stream()
+                .map(this::mapResultToQuote).map(DTOMappings::fromQuoteToQuoteDTO)
+                .toList();
+    }
+
+    private Quote mapResultToQuote(Object[] result) {
+        Quote quote = new Quote();
+        quote.setId((Long) result[0]);
+        quote.setText((String) result[1]);
+
+        Author authorDTO = new Author();
+        authorDTO.setId((Long) result[2]);
+        authorDTO.setName((String) result[3]);
+
+        quote.setAuthor(authorDTO);
+
+        Tag tag = new Tag();
+        tag.setId((Long) result[4]);
+        tag.setName((String) result[5]);
+
+        quote.getTags().add(tag);
+
+        return quote;
+    }
 }

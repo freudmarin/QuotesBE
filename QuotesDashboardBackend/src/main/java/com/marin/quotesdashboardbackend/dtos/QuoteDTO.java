@@ -3,6 +3,8 @@ package com.marin.quotesdashboardbackend.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @AllArgsConstructor
 public class QuoteDTO {
@@ -11,5 +13,7 @@ public class QuoteDTO {
     private String text;
 
     private AuthorDTO author;
+
+    private List<TagDTO> tags;
 
 }

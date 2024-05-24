@@ -53,6 +53,15 @@ public class QuoteController {
         return ResponseEntity.ok(quoteService.getQuotesByTags(tags));
     }
 
+    @GetMapping("search")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<QuoteDTO>> searchQuotes(
+            @RequestParam(required = false) String text,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) List<String> tags) {
+        return ResponseEntity.ok(quoteService.searchQuotes(text, author, tags));
+    }
+
     @GetMapping("{quoteId}/likes-count")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Integer> getLikesCount(@PathVariable Long quoteId) {

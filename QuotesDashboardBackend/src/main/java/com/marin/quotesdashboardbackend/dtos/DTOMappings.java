@@ -7,7 +7,8 @@ import java.util.stream.Collectors;
 public class DTOMappings {
 
     public static  QuoteDTO fromQuoteToQuoteDTO(Quote quote) {
-        return new QuoteDTO(quote.getId(), quote.getText(), fromAuthorToAuthorDTO(quote.getAuthor()));
+        return new QuoteDTO(quote.getId(), quote.getText(), fromAuthorToAuthorDTO(quote.getAuthor()),
+                quote.getTags().stream().map(DTOMappings::fromTagToTagDTO).toList());
     }
 
     public static  AuthorDTO fromAuthorToAuthorDTO(Author author) {
