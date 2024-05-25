@@ -26,6 +26,7 @@ public class UserActivityService {
         return userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
     }
 
+    /*could be improved*/
     public List<UserActivityDTO> getUserActivityFeed() {
         User user = getLoggedInUser();
         List<User> friends = friendConnectionService.getFriends().stream()

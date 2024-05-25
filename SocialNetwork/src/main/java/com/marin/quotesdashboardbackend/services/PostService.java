@@ -30,7 +30,7 @@ public class PostService {
         Quote quote = quoteService.findQuoteById(quoteId);
         Post post = new Post();
         post.setQuote(quote);
-        post.setUser(user);
+        post.setAuthor(user);
         post.setText(postDTO.getText());
         return DTOMappings.fromPosttoPostDTO(postRepository.save(post));
     }

@@ -29,7 +29,7 @@ public class Post {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private User author;
 
     @OneToMany(mappedBy = "post")
     private List<UserPostInteraction> interactions;
@@ -55,4 +55,6 @@ public class Post {
         updatedAt = LocalDateTime.now();
     }
 
+    /*TODO posts can be public or private*/
+    /*TODO make relevant changes in the business logic*/
 }

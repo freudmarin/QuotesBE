@@ -36,9 +36,9 @@ public class QuoteController {
     @GetMapping("search")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<QuoteDTO>> searchQuotes(
-            @RequestParam(required = false) String text,
-            @RequestParam(required = false) String author,
-            @RequestParam(required = false) List<String> tags) {
+            @RequestParam(name = "text", required = false) String text,
+            @RequestParam(name = "author", required = false) String author,
+            @RequestParam(name = "tags", required = false) List<String> tags) {
         return ResponseEntity.ok(quoteService.searchQuotes(text, author, tags));
     }
 

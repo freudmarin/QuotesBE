@@ -6,7 +6,6 @@ import com.marin.quotesdashboardbackend.entities.Post;
 import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.services.CustomUserDetailsService;
 import com.marin.quotesdashboardbackend.services.PostService;
-import com.marin.quotesdashboardbackend.services.QuoteService;
 import com.marin.quotesdashboardbackend.services.UserPostInteractionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +15,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("api/v1/quotes")
+@RequestMapping("api/v1/posts")
 @PreAuthorize("hasRole('USER')")
 public class PostController {
 
     private final CustomUserDetailsService userDetailsService;
     private final PostService postService;
-    private final QuoteService quoteService;
     private final UserPostInteractionService userPostInteractionService;
 
     @PostMapping("{quoteId}/post")
@@ -39,7 +37,7 @@ public class PostController {
     org.springframework.security.core.userdetails.User userDetails) {
         User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
         Post post = postService.findById(postId);
-        userPostInteractionService.likePost(user, post);
+        userPostInteractionService.likePost(user,post);
         return ResponseEntity.ok().build();
     }
 

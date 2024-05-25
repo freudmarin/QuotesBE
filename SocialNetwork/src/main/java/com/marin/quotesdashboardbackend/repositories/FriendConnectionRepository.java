@@ -12,4 +12,5 @@ public interface FriendConnectionRepository extends JpaRepository<FriendConnecti
     List<FriendConnection> findByFriendAndStatus(User friend, FriendConnectionStatus status);
     int countByUserAndStatus(User friend, FriendConnectionStatus status);
     FriendConnection findByUserAndFriendAndStatus(User user, User friend, FriendConnectionStatus status);
+    boolean existsByUserAndFriendAndStatus(User user, User friend, FriendConnectionStatus status);
 }

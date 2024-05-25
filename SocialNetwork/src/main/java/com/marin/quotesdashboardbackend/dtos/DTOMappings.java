@@ -6,16 +6,16 @@ import java.util.stream.Collectors;
 
 public class DTOMappings {
 
-    public static  QuoteDTO fromQuoteToQuoteDTO(Quote quote) {
+    public static QuoteDTO fromQuoteToQuoteDTO(Quote quote) {
         return new QuoteDTO(quote.getId(), quote.getText(), fromAuthorToAuthorDTO(quote.getAuthor()),
                 quote.getTags().stream().map(DTOMappings::fromTagToTagDTO).toList());
     }
 
-    public static  AuthorDTO fromAuthorToAuthorDTO(Author author) {
+    public static AuthorDTO fromAuthorToAuthorDTO(Author author) {
         return new AuthorDTO(author.getId(), author.getName());
     }
 
-    public static  CommentDTO fromCommentToCommentDTO(Comment comment) {
+    public static CommentDTO fromCommentToCommentDTO(Comment comment) {
         return new CommentDTO(comment.getId(), comment.getContent());
     }
 
@@ -53,7 +53,7 @@ public class DTOMappings {
     }
 
     public static PostDTO fromPosttoPostDTO(Post post) {
-        return new PostDTO(fromQuoteToQuoteDTO(post.getQuote()),fromUserToUserDTO(post.getUser()),
+        return new PostDTO(fromQuoteToQuoteDTO(post.getQuote()), fromUserToUserDTO(post.getAuthor()),
                 post.getText(),
                 post.getCreatedAt(), post.getUpdatedAt());
     }

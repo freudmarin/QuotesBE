@@ -31,8 +31,7 @@ public class FriendConnectionService {
 
     public FriendConnectionDTO sendFriendRequest(Long friendId) {
         User user = getLoggedInUser();
-        User friend = userRepository.findById(friendId).orElseThrow();
-
+        User friend = userRepository.findById(friendId).orElseThrow(() -> new EntityNotFoundException("User not found"));
         FriendConnection connection = new FriendConnection(null, user, friend, FriendConnectionStatus.PENDING);
         return DTOMappings.fromFriendConnectionToFriendConnectionDTO(connectionRepository.save(connection));
     }
@@ -79,8 +78,7 @@ public class FriendConnectionService {
         User friend = userRepository.findById(friendId).orElseThrow(() -> new EntityNotFoundException("User not found"));
         FriendConnection friendConnection = connectionRepository.findByUserAndFriendAndStatus(user, friend, FriendConnectionStatus.ACCEPTED);
         if (friendConnection != null) {
-            friendConnection.setStatus(FriendConnectionStatus.REMOVED);
-            connectionRepository.save(friendConnection);
+            connectionRepository.delete(friendConnection);
         } else {
             throw new EntityNotFoundException("Friend connection not found");
         }
