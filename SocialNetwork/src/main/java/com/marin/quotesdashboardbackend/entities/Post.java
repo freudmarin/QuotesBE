@@ -45,6 +45,12 @@ public class Post {
     @Column(name = "is_deleted")
     private boolean isDeleted;
 
+    @OneToMany(mappedBy = "post")
+    private List<Comment> comments;
+
+    @Column(name = "is_public")
+    private boolean isPublic;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -55,6 +61,4 @@ public class Post {
         updatedAt = LocalDateTime.now();
     }
 
-    /*TODO posts can be public or private*/
-    /*TODO make relevant changes in the business logic*/
 }

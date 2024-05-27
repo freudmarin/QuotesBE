@@ -8,7 +8,8 @@ import com.marin.quotesdashboardbackend.services.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,10 +25,14 @@ public class CommentController {
 
     private final CustomUserDetailsService userDetailsService;
 
+    private User getLoggedInUser() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
+    }
+
     @PostMapping("{postId}")
-    public ResponseEntity<CommentDTO> addComment(@PathVariable Long postId, @RequestBody Map<String, String> requestBody,
-                                                @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
-        User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
+    public ResponseEntity<CommentDTO> addComment(@PathVariable Long postId, @RequestBody Map<String, String> requestBody) {
+        User user = getLoggedInUser();
         return ResponseEntity.ok(commentService.addComment(postId, user, requestBody.get("content")));
     }
 
@@ -37,17 +42,15 @@ public class CommentController {
     }
 
     @PutMapping("{commentId}")
-    public ResponseEntity<CommentDTO> updateComment(@PathVariable Long commentId, @RequestBody Map<String, String> requestBody,
-                                    @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
+    public ResponseEntity<CommentDTO> updateComment(@PathVariable Long commentId, @RequestBody Map<String, String> requestBody) {
         String content = requestBody.get("content");
-        User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
+        User user = getLoggedInUser();
         return ResponseEntity.ok(commentService.updateComment(commentId, user, content));
     }
 
     @DeleteMapping("{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable Long commentId,
-                              @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
-        User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
+    public ResponseEntity<?> deleteComment(@PathVariable Long commentId) {
+        User user = getLoggedInUser();
         commentService.deleteComment(commentId, user);
         return ResponseEntity.noContent().build();
     }

@@ -1,5 +1,6 @@
 package com.marin.quotesdashboardbackend.controller;
 
+import com.marin.quotesdashboardbackend.dtos.DTOMappings;
 import com.marin.quotesdashboardbackend.dtos.PostCreateUpdateDTO;
 import com.marin.quotesdashboardbackend.dtos.PostDTO;
 import com.marin.quotesdashboardbackend.entities.Post;
@@ -10,8 +11,11 @@ import com.marin.quotesdashboardbackend.services.UserPostInteractionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -23,28 +27,30 @@ public class PostController {
     private final PostService postService;
     private final UserPostInteractionService userPostInteractionService;
 
-    @PostMapping("{quoteId}/post")
-    public ResponseEntity<PostDTO> createPost(@PathVariable Long quoteId, @AuthenticationPrincipal
-    org.springframework.security.core.userdetails.User userDetails, @RequestBody PostCreateUpdateDTO postDTO) {
-        User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
-        return ResponseEntity.ok(postService.save(quoteId, user, postDTO));
+    private User getLoggedInUser() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
     }
 
-    /*TODO Update a post*/
+    @PostMapping("{quoteId}/post")
+    public ResponseEntity<PostDTO> createPost(@PathVariable Long quoteId, @RequestBody PostCreateUpdateDTO postDTO) {
+        User user = getLoggedInUser();
+        return ResponseEntity.ok(postService.save(user, postDTO));
+    }
+
 
     @PostMapping("{postId}/like")
-    public ResponseEntity<Void> likePost(@PathVariable Long postId, @AuthenticationPrincipal
-    org.springframework.security.core.userdetails.User userDetails) {
-        User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
-        Post post = postService.findById(postId);
+    public ResponseEntity<Void> likePost(@PathVariable Long postId) {
+        User user = getLoggedInUser();
+        Post post = postService.getPostById(postId, user);
         userPostInteractionService.likePost(user,post);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("{postId}/unlike")
-    public ResponseEntity<Void> unlikePost(@PathVariable Long postId, @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
-        User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
-        Post post = postService.findById(postId);
+    public ResponseEntity<Void> unlikePost(@PathVariable Long postId) {
+        User user = getLoggedInUser();
+        Post post = postService.getPostById(postId, user);
         userPostInteractionService.unlikePost(user, post);
         return ResponseEntity.ok().build();
     }
@@ -54,4 +60,31 @@ public class PostController {
         int likesCount = userPostInteractionService.getLikesCount(postId);
         return ResponseEntity.ok(likesCount);
     }
+
+    @PutMapping("{postId}")
+    public ResponseEntity<PostDTO> updatePost(@PathVariable Long postId, @RequestBody PostCreateUpdateDTO updatedPostDTO) {
+        User requestingUser = getLoggedInUser();
+        return ResponseEntity.ok(postService.updatePost(postId, updatedPostDTO, requestingUser));
+    }
+
+    @DeleteMapping("{postId}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
+        User requestingUser = getLoggedInUser();
+        postService.deletePost(postId, requestingUser);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("{postId}")
+    public ResponseEntity<PostDTO> getPostById(@PathVariable Long postId) {
+        User requestingUser = getLoggedInUser();
+        return ResponseEntity.ok(DTOMappings.
+                fromPostToPostDTO(postService.getPostById(postId, requestingUser)));
+    }
+
+    @GetMapping("user/{authorId}")
+    public ResponseEntity<List<PostDTO>> getUserPosts(@PathVariable Long authorId) {
+        User requestingUser = getLoggedInUser();
+        return ResponseEntity.ok(postService.getUserPosts(authorId, requestingUser));
+    }
+
 }

@@ -26,20 +26,21 @@ public class UserPostInteractionService {
     private final FriendConnectionRepository friendConnectionRepository;
 
     public void likePost(User user, Post post) {
-        if (friendConnectionRepository.existsByUserAndFriendAndStatus(user, post.getAuthor(), FriendConnectionStatus.ACCEPTED)
+        if (post.isPublic() || friendConnectionRepository.existsByUserAndFriendAndStatus(user, post.getAuthor(), FriendConnectionStatus.ACCEPTED)
                 || friendConnectionRepository.existsByUserAndFriendAndStatus(post.getAuthor(), user, FriendConnectionStatus.ACCEPTED)
-                || user == post.getAuthor()) {
+                || user.equals(post.getAuthor())) {
             UserPostInteraction interaction = new UserPostInteraction(user, true, post, false);
             interaction.setAddedAt(LocalDateTime.now());
             repository.save(interaction);
-        } else
-            throw new UnauthorizedException("User with id" + user.getId() + " is not friend of user" + post.getAuthor().getId());
+        } else {
+            throw new UnauthorizedException("User with id " + user.getId() + " is not allowed to like this post.");
+        }
     }
 
     public void unlikePost(User user, Post post) {
-        if (friendConnectionRepository.existsByUserAndFriendAndStatus(user, post.getAuthor(), FriendConnectionStatus.ACCEPTED)
+        if (post.isPublic() || friendConnectionRepository.existsByUserAndFriendAndStatus(user, post.getAuthor(), FriendConnectionStatus.ACCEPTED)
                 || friendConnectionRepository.existsByUserAndFriendAndStatus(post.getAuthor(), user, FriendConnectionStatus.ACCEPTED)
-                || user == post.getAuthor()) {
+                || user.equals(post.getAuthor())) {
             UserPostInteraction interaction = repository.findByUserAndPost(user, post).orElseThrow(() ->
                     new EntityNotFoundException("Interaction not found"));
             if (interaction.isLiked()) {
@@ -47,6 +48,8 @@ public class UserPostInteractionService {
                 interaction.setUpdatedAt(LocalDateTime.now());
                 repository.save(interaction);
             }
+        } else {
+            throw new UnauthorizedException("User with id " + user.getId() + " is not allowed to unlike this post.");
         }
     }
 

@@ -2,6 +2,8 @@ package com.marin.quotesdashboardbackend.dtos;
 
 import com.marin.quotesdashboardbackend.entities.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class DTOMappings {
@@ -28,21 +30,16 @@ public class DTOMappings {
     }
 
     public static UserActivityDTO fromUserInteractionToUserActivityDTO(UserPostInteraction userInteraction) {
-        return new UserActivityDTO(fromUserToUserDTO(userInteraction.getUser()), fromPosttoPostDTO(userInteraction.getPost()),
+        return new UserActivityDTO(fromUserToUserDTO(userInteraction.getUser()), fromPostToPostDTO(userInteraction.getPost()),
                 userInteraction.isLiked(), userInteraction.getAddedAt(), userInteraction.getUpdatedAt());
     }
 
-    public static UserProfileDTO fromUserToProfileDTO(User user) {
-        UserProfileDTO dto = new UserProfileDTO();
-        dto.setId(user.getId());
-        dto.setEmail(user.getEmail());
-        dto.setName(user.getName());
-        dto.setProfilePictureUrl(user.getProfilePictureUrl());
-        dto.setBio(user.getBio());
-        dto.setSocialLinks(user.getSocialLinks());
-        dto.setFavoriteTags(user.getFavoriteTags().stream().map(DTOMappings::fromTagToTagDTO).collect(Collectors.toSet()));
-        dto.setFavoriteAuthors(user.getFavoriteAuthors().stream().map(DTOMappings::fromAuthorToAuthorDTO).collect(Collectors.toSet()));
-        return dto;
+    public static UserProfileDTO fromUserToProfileDTO(User user, List<PostDTO> postsDTO) {
+       return new UserProfileDTO(user.getId(), user.getEmail(), user.getName(),
+                user.getProfilePictureUrl(), user.getBio(), user.getSocialLinks(),
+                user.getFavoriteTags().stream().map(DTOMappings::fromTagToTagDTO).collect(Collectors.toSet()),
+                user.getFavoriteAuthors().stream().map(DTOMappings::fromAuthorToAuthorDTO).collect(Collectors.toSet()),
+                postsDTO);
     }
 
     public static TagDTO fromTagToTagDTO(Tag tag) {
@@ -52,8 +49,10 @@ public class DTOMappings {
         return dto;
     }
 
-    public static PostDTO fromPosttoPostDTO(Post post) {
-        return new PostDTO(fromQuoteToQuoteDTO(post.getQuote()), fromUserToUserDTO(post.getAuthor()),
+    public static PostDTO fromPostToPostDTO(Post post) {
+        return new PostDTO(fromQuoteToQuoteDTO(post.getQuote()),
+                post.getComments() == null ? new ArrayList<>(): post.getComments().stream().map(DTOMappings::fromCommentToCommentDTO).toList(),
+                fromUserToUserDTO(post.getAuthor()),
                 post.getText(),
                 post.getCreatedAt(), post.getUpdatedAt());
     }

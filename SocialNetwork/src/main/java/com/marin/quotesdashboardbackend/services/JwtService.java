@@ -26,7 +26,6 @@ public class JwtService {
 
     @PostConstruct
     public void init() {
-        // Ensure the SECRET_KEY length is 256 bits (32 bytes)
         key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 

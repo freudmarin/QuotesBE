@@ -20,7 +20,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FriendConnectionService {
 
-
     private final FriendConnectionRepository connectionRepository;
     private final UserRepository userRepository;
 
@@ -37,7 +36,7 @@ public class FriendConnectionService {
     }
 
     public FriendConnectionDTO respondToFriendRequest(Long connectionId, FriendConnectionStatus status) {
-        FriendConnection connection = connectionRepository.findById(connectionId).orElseThrow();
+        FriendConnection connection = connectionRepository.findById(connectionId).orElseThrow(() -> new EntityNotFoundException("Connection not found"));
         User loggedInUser = getLoggedInUser();
 
         if (!connection.getFriend().equals(loggedInUser)) {

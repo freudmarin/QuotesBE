@@ -9,7 +9,8 @@ import com.marin.quotesdashboardbackend.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,27 +24,27 @@ public class UserController {
 
     private final CustomUserDetailsService userDetailsService;
 
-    @GetMapping("profile")
-    public ResponseEntity<UserProfileDTO> getUserProfile(@AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
-        User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
-        UserProfileDTO profile = userService.getUserProfile(user);
-        return ResponseEntity.ok(profile);
+    private User getLoggedInUser() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
     }
 
+    @GetMapping("{userId}/profile")
+    public ResponseEntity<UserProfileDTO> getUserProfile(@PathVariable Long userId) {
+        User requestingUser = getLoggedInUser();
+        UserProfileDTO userProfile = userService.getUserProfile(userId, requestingUser);
+        return ResponseEntity.ok(userProfile);
+    }
     @PostMapping("profile")
-    public ResponseEntity<UserProfileDTO> updateUserProfile(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails,
-            @RequestBody UserProfileUpdateDTO updateDTO) {
-        User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
-        UserProfileDTO profile = userService.updateUserProfile(user, updateDTO);
-        return ResponseEntity.ok(profile);
+    public ResponseEntity<Void> updateUserProfile(@RequestBody UserProfileUpdateDTO updateDTO) {
+        User user = getLoggedInUser();
+        userService.updateUserProfile(user, updateDTO);
+       return ResponseEntity.ok().build();
     }
 
     @PostMapping("profile/picture")
-    public ResponseEntity<String> uploadProfilePicture(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails,
-            @RequestParam("file") MultipartFile file) {
-        User user = userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
+    public ResponseEntity<String> uploadProfilePicture(@RequestParam("file") MultipartFile file) {
+        User user = getLoggedInUser();
         String profilePictureUrl = userService.uploadProfilePicture(user, file);
         return ResponseEntity.ok(profilePictureUrl);
     }
