@@ -27,4 +27,10 @@ public interface UserPostInteractionRepository extends JpaRepository<UserPostInt
 
     List<UserPostInteraction> findByUserInOrderByAddedAtDesc(List<User> users);
 
+    @Query("SELECT i FROM UserPostInteraction i " +
+            "JOIN i.post p " +
+            "WHERE (i.user IN :friends AND p.isPublic = true) " +
+            "OR (p.user IN :friends AND p.isPublic = true) " +
+            "ORDER BY i.addedAt DESC")
+    List<UserPostInteraction> findFriendsInteractionsOnPublicPosts(@Param("friends") List<User> friends);
 }

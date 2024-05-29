@@ -44,7 +44,7 @@ public class UserService {
         List<Post> posts;
         List<PostDTO> postsDTO = null;
         if (areFriends || requestingUser.equals(user)) {
-            posts = postRepository.findByAuthorAndDeletedIsFalse(user);
+            posts = postRepository.findByUserAndIsDeletedIsFalse(user);
             postsDTO= posts.stream()
                     .map(DTOMappings::fromPostToPostDTO)
                     .toList();
@@ -62,10 +62,16 @@ public class UserService {
 
         // Fetch all tags in a single query
         List<Tag> favoriteTags = tagRepository.findAllById(updateDTO.getFavouriteTagIds());
+        if (favoriteTags.size() != updateDTO.getFavouriteTagIds().size()) {
+            throw new IllegalArgumentException("Favorite tag ids do not match");
+        }
         user.setFavoriteTags(new HashSet<>(favoriteTags));
 
         // Fetch all authors in a single query
         List<Author> favoriteAuthors = authorRepository.findAllById(updateDTO.getFavouriteAuthorIds());
+        if (favoriteAuthors.size() != updateDTO.getFavouriteAuthorIds().size()) {
+            throw new IllegalArgumentException("Favorite tag ids do not match");
+        }
         user.setFavoriteAuthors(new HashSet<>(favoriteAuthors));
 
         userRepository.save(user);

@@ -39,7 +39,7 @@ public class User implements UserDetails {
     @ToString.Exclude
     private List<UserPostInteraction> interactions;
 
-    @OneToMany(mappedBy = "author")
+    @OneToMany(mappedBy = "user")
     private List<Post> posts;
 
     // New fields

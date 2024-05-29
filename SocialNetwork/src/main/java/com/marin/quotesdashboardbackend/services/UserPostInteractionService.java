@@ -26,9 +26,9 @@ public class UserPostInteractionService {
     private final FriendConnectionRepository friendConnectionRepository;
 
     public void likePost(User user, Post post) {
-        if (post.isPublic() || friendConnectionRepository.existsByUserAndFriendAndStatus(user, post.getAuthor(), FriendConnectionStatus.ACCEPTED)
-                || friendConnectionRepository.existsByUserAndFriendAndStatus(post.getAuthor(), user, FriendConnectionStatus.ACCEPTED)
-                || user.equals(post.getAuthor())) {
+        if (post.isPublic() || friendConnectionRepository.existsByUserAndFriendAndStatus(user, post.getUser(), FriendConnectionStatus.ACCEPTED)
+                || friendConnectionRepository.existsByUserAndFriendAndStatus(post.getUser(), user, FriendConnectionStatus.ACCEPTED)
+                || user.equals(post.getUser())) {
             UserPostInteraction interaction = new UserPostInteraction(user, true, post, false);
             interaction.setAddedAt(LocalDateTime.now());
             repository.save(interaction);
@@ -38,9 +38,9 @@ public class UserPostInteractionService {
     }
 
     public void unlikePost(User user, Post post) {
-        if (post.isPublic() || friendConnectionRepository.existsByUserAndFriendAndStatus(user, post.getAuthor(), FriendConnectionStatus.ACCEPTED)
-                || friendConnectionRepository.existsByUserAndFriendAndStatus(post.getAuthor(), user, FriendConnectionStatus.ACCEPTED)
-                || user.equals(post.getAuthor())) {
+        if (post.isPublic() || friendConnectionRepository.existsByUserAndFriendAndStatus(user, post.getUser(), FriendConnectionStatus.ACCEPTED)
+                || friendConnectionRepository.existsByUserAndFriendAndStatus(post.getUser(), user, FriendConnectionStatus.ACCEPTED)
+                || user.equals(post.getUser())) {
             UserPostInteraction interaction = repository.findByUserAndPost(user, post).orElseThrow(() ->
                     new EntityNotFoundException("Interaction not found"));
             if (interaction.isLiked()) {

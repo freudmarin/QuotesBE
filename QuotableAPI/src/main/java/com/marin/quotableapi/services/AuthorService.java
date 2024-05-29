@@ -5,10 +5,13 @@ import com.marin.quotableapi.enums.SortBy;
 import com.marin.quotableapi.models.Author;
 import com.marin.quotableapi.models.AuthorPage;
 import com.marin.quotableapi.models.SearchAuthorsResponse;
+import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @Service
@@ -54,7 +57,9 @@ public class AuthorService {
         return webClient.get()
                 .uri("/authors/{id}", id)
                 .retrieve()
-                .bodyToMono(Author.class);
+                .bodyToMono(Author.class)
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                        .filter(ex -> ex instanceof ServiceException));
     }
 
     public Mono<Author> getAuthorBySlug(String slug) {

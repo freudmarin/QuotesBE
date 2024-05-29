@@ -10,8 +10,12 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    List<Post> findByAuthorAndDeletedIsFalse(User author);
+    List<Post> findByUserAndIsDeletedIsFalse(User author);
 
-    @Query("SELECT p FROM Post p WHERE p.author.id = :authorId AND p.isDeleted = false AND (p.isPublic = true OR p.author IN (SELECT fc.friend FROM FriendConnection fc WHERE fc.user = :requestingUser AND fc.status = 'ACCEPTED'))")
+    @Query("SELECT p FROM Post p WHERE p.user.id = :authorId AND p.isDeleted = false AND (p.isPublic = true OR p.user IN (SELECT fc.friend FROM FriendConnection fc WHERE fc.user = :requestingUser AND fc.status = 'ACCEPTED')" +
+            "OR p.user IN (SELECT fc.user FROM FriendConnection fc WHERE fc.friend = :requestingUser AND fc.status = 'ACCEPTED'))")
     List<Post> findAccessiblePosts(@Param("authorId") Long authorId, @Param("requestingUser") User requestingUser);
+
+    @Query("SELECT p FROM Post p WHERE p.isPublic = true OR (p.user.id IN :friendIds AND p.isDeleted = false) ORDER BY p.createdAt DESC")
+    List<Post> findLatestPublicAndFriendsPosts(@Param("friendIds") List<Long> friendIds);
 }

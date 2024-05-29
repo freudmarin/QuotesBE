@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @Getter
@@ -12,12 +13,8 @@ import java.time.LocalDateTime;
 public class UserActivityDTO {
 
     private UserDTO user;
-
-    private PostDTO quote;
-
-    private boolean liked;
-
-    private LocalDateTime addedAt;
-
+    private PostDTO post;
+    private List<UserPostInteractionDTO> interactions;
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

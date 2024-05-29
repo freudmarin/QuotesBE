@@ -32,10 +32,10 @@ public class PostController {
         return userDetailsService.loadUserEntityByUsername(userDetails.getUsername());
     }
 
-    @PostMapping("{quoteId}/post")
-    public ResponseEntity<PostDTO> createPost(@PathVariable Long quoteId, @RequestBody PostCreateUpdateDTO postDTO) {
+    @PostMapping("post")
+    public ResponseEntity<PostDTO> createPost(@RequestBody PostCreateUpdateDTO postDTO) {
         User user = getLoggedInUser();
-        return ResponseEntity.ok(postService.save(user, postDTO));
+        return ResponseEntity.ok(postService.createOrUpdatePost(postDTO, user));
     }
 
 
@@ -61,10 +61,10 @@ public class PostController {
         return ResponseEntity.ok(likesCount);
     }
 
-    @PutMapping("{postId}")
-    public ResponseEntity<PostDTO> updatePost(@PathVariable Long postId, @RequestBody PostCreateUpdateDTO updatedPostDTO) {
+    @PutMapping("update")
+    public ResponseEntity<PostDTO> updatePost(@RequestBody PostCreateUpdateDTO updatedPostDTO) {
         User requestingUser = getLoggedInUser();
-        return ResponseEntity.ok(postService.updatePost(postId, updatedPostDTO, requestingUser));
+        return ResponseEntity.ok(postService.createOrUpdatePost(updatedPostDTO, requestingUser));
     }
 
     @DeleteMapping("{postId}")
