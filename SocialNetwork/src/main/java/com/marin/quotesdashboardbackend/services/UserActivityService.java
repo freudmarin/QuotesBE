@@ -2,6 +2,7 @@ package com.marin.quotesdashboardbackend.services;
 
 import com.marin.quotesdashboardbackend.dtos.DTOMappings;
 import com.marin.quotesdashboardbackend.dtos.UserActivityDTO;
+import com.marin.quotesdashboardbackend.dtos.UserPostKey;
 import com.marin.quotesdashboardbackend.entities.Post;
 import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.entities.UserPostInteraction;
@@ -13,7 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,7 +25,6 @@ public class UserActivityService {
     private final FriendConnectionService friendConnectionService;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
-    private final UserPostInteractionRepository userPostInteractionRepository;
 
     private User getLoggedInUser() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -42,21 +42,35 @@ public class UserActivityService {
         friends.add(user);
 
         // Get latest public posts and friends' posts
-        List<Post> posts = postRepository.findLatestPublicAndFriendsPosts(friends.stream().map(User::getId).toList());
+        List<Post> friendAndPublicPosts = postRepository.findLatestPublicAndFriendsPosts(friends.stream().map(User::getId).toList());
 
         // Get friends' activities on public posts or their friends' activities
-        List<UserPostInteraction> interactions = interactionRepository.findFriendsInteractionsOnPublicPosts(friends);
+        List<UserPostInteraction> friendInteractions = interactionRepository.findFriendsInteractionsOnPublicPosts(friends);
 
-        // Combine posts and interactions
-        List<UserActivityDTO> activityFeed = posts.stream()
+        // Use a map to ensure uniqueness based on a custom key of user ID and post ID
+        Map<UserPostKey, UserActivityDTO> activityFeedMap = new HashMap<>();
+
+        friendAndPublicPosts.stream()
                 .map(DTOMappings::fromPostToUserActivityDTO)
-                .collect(Collectors.toList());
+                .forEach(dto -> {
+                    UserPostKey key = new UserPostKey(dto.getUser().getId(), dto.getPost().getId());
+                    System.out.println("Adding post activity with key: " + key);
+                    activityFeedMap.putIfAbsent(key, dto);
+                });
 
-        activityFeed.addAll(interactions.stream()
+        friendInteractions.stream()
                 .map(DTOMappings::fromUserInteractionToUserActivityDTO)
-                .toList());
+                .forEach(dto -> {
+                    UserPostKey key = new UserPostKey(dto.getUser().getId(), dto.getPost().getId());
+                    System.out.println("Adding interaction activity with key: " + key);
+                    activityFeedMap.merge(key, dto, (existing, newDto) -> {
+                        existing.getInteractions().addAll(newDto.getInteractions());
+                        return existing;
+                    });
+                });
 
-        // Sort by date
+        // Convert the map values to a list and sort by date
+        List<UserActivityDTO> activityFeed = new ArrayList<>(activityFeedMap.values());
         activityFeed.sort((a1, a2) -> a2.getCreatedAt().compareTo(a1.getCreatedAt()));
 
         return activityFeed;
