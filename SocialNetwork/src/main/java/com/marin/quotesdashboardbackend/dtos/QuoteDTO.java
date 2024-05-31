@@ -1,12 +1,14 @@
 package com.marin.quotesdashboardbackend.dtos;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
+@Setter
+@NoArgsConstructor
 public class QuoteDTO {
     private Long id;
 

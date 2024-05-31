@@ -2,7 +2,7 @@ package com.marin.quotesdashboardbackend.services;
 
 import com.marin.quotesdashboardbackend.dtos.DTOMappings;
 import com.marin.quotesdashboardbackend.dtos.UserActivityDTO;
-import com.marin.quotesdashboardbackend.dtos.UserPostKey;
+import com.marin.quotesdashboardbackend.dtos.UserPostInteractionDTO;
 import com.marin.quotesdashboardbackend.entities.Post;
 import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.entities.UserPostInteraction;
@@ -10,15 +10,22 @@ import com.marin.quotesdashboardbackend.repositories.PostRepository;
 import com.marin.quotesdashboardbackend.repositories.UserPostInteractionRepository;
 import com.marin.quotesdashboardbackend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserActivityService {
 
     private final UserPostInteractionRepository interactionRepository;
@@ -26,53 +33,68 @@ public class UserActivityService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
 
-    private User getLoggedInUser() {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-    }
-
-    public List<UserActivityDTO> getUserActivityFeed() {
+    public List<UserActivityDTO> getUserActivityFeed(int page, int size) {
         User user = getLoggedInUser();
-
-        // Get friends list
-        List<User> friends = friendConnectionService.getFriends().stream()
-                .map(fc -> fc.getFriend().equals(user) ? fc.getUser() : fc.getFriend())
-                .collect(Collectors.toList());
-
+        List<User> friends = getFriends(user);
         friends.add(user);
 
-        // Get latest public posts and friends' posts
-        List<Post> friendAndPublicPosts = postRepository.findLatestPublicAndFriendsPosts(friends.stream().map(User::getId).toList());
+        Pageable pageable = PageRequest.of(page, size);
+        log.info("Fetching posts for friends and public with pageable: {}", pageable);
+        Page<Post> friendAndPublicPostsPage = getFriendAndPublicPosts(friends, pageable);
+        List<Post> friendAndPublicPosts = friendAndPublicPostsPage.getContent();
+        List<UserPostInteraction> friendInteractions = getFriendInteractions(friends);
 
-        // Get friends' activities on public posts or their friends' activities
-        List<UserPostInteraction> friendInteractions = interactionRepository.findFriendsInteractionsOnPublicPosts(friends);
+        log.info("Creating activity feed");
+        List<UserActivityDTO> activityFeed = createActivityFeed(friendAndPublicPosts, friendInteractions);
 
-        // Use a map to ensure uniqueness based on a custom key of user ID and post ID
-        Map<UserPostKey, UserActivityDTO> activityFeedMap = new HashMap<>();
-
-        friendAndPublicPosts.stream()
-                .map(DTOMappings::fromPostToUserActivityDTO)
-                .forEach(dto -> {
-                    UserPostKey key = new UserPostKey(dto.getUser().getId(), dto.getPost().getId());
-                    System.out.println("Adding post activity with key: " + key);
-                    activityFeedMap.putIfAbsent(key, dto);
-                });
-
-        friendInteractions.stream()
-                .map(DTOMappings::fromUserInteractionToUserActivityDTO)
-                .forEach(dto -> {
-                    UserPostKey key = new UserPostKey(dto.getUser().getId(), dto.getPost().getId());
-                    System.out.println("Adding interaction activity with key: " + key);
-                    activityFeedMap.merge(key, dto, (existing, newDto) -> {
-                        existing.getInteractions().addAll(newDto.getInteractions());
-                        return existing;
-                    });
-                });
-
-        // Convert the map values to a list and sort by date
-        List<UserActivityDTO> activityFeed = new ArrayList<>(activityFeedMap.values());
-        activityFeed.sort((a1, a2) -> a2.getCreatedAt().compareTo(a1.getCreatedAt()));
+        activityFeed.sort((a1, a2) -> a2.getAddedAt().compareTo(a1.getAddedAt()));
 
         return activityFeed;
+    }
+
+    private User getLoggedInUser() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    private List<User> getFriends(User user) {
+        return friendConnectionService.getFriends().stream()
+                .map(fc -> fc.getFriend().equals(user) ? fc.getUser() : fc.getFriend())
+                .collect(Collectors.toList());
+    }
+
+    private Page<Post> getFriendAndPublicPosts(List<User> friends, Pageable pageable) {
+        return postRepository.findLatestPublicAndFriendsPosts(friends.stream().map(User::getId).toList(), pageable);
+    }
+
+    private List<UserPostInteraction> getFriendInteractions(List<User> friends) {
+        return interactionRepository.findFriendsInteractionsOnPublicPosts(friends);
+    }
+
+    private List<UserActivityDTO> createActivityFeed(List<Post> posts, List<UserPostInteraction> interactions) {
+        List<UserActivityDTO> activityFeed = new ArrayList<>();
+
+        posts.forEach(post -> {
+            UserActivityDTO userActivityDTO = DTOMappings.INSTANCE.toUserActivityDTO(post);
+            userActivityDTO.setInteractions(mapInteractions(post.getInteractions()));
+            activityFeed.add(userActivityDTO);
+        });
+
+        interactions.forEach(interaction -> {
+            UserActivityDTO activityDTO = DTOMappings.INSTANCE.toUserActivityDTO(interaction);
+            activityDTO.setInteractions(List.of(DTOMappings.INSTANCE.toUserPostInteractionDTO(interaction)));
+            activityFeed.add(activityDTO);
+        });
+
+        return activityFeed;
+    }
+
+    private List<UserPostInteractionDTO> mapInteractions(List<UserPostInteraction> interactions) {
+        if (interactions == null) {
+            return new ArrayList<>();
+        }
+        return interactions.stream()
+                .map(DTOMappings.INSTANCE::toUserPostInteractionDTO)
+                .collect(Collectors.toList());
     }
 }

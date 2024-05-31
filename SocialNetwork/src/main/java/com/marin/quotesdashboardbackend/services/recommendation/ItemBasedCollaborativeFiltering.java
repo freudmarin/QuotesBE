@@ -53,7 +53,7 @@ public class ItemBasedCollaborativeFiltering {
                 .sorted(Map.Entry.<Quote, Double>comparingByValue().reversed())
                 .limit(10)
                 .map(Map.Entry::getKey)
-                .map(DTOMappings::fromQuoteToQuoteDTO)
+                .map(DTOMappings.INSTANCE::toQuoteDTO)
                 .toList();
         log.info("Recommended quotes in item-based collaborative filtering: {}", quotesToRecommend.size());
         return quotesToRecommend;

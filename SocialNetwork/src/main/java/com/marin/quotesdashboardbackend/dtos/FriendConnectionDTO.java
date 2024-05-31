@@ -1,11 +1,11 @@
 package com.marin.quotesdashboardbackend.dtos;
 
 import com.marin.quotesdashboardbackend.enums.FriendConnectionStatus;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
+@NoArgsConstructor
 @Getter @Setter
 public class FriendConnectionDTO {
 

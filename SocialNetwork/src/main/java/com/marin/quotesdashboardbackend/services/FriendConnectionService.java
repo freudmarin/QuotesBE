@@ -32,7 +32,7 @@ public class FriendConnectionService {
         User user = getLoggedInUser();
         User friend = userRepository.findById(friendId).orElseThrow(() -> new EntityNotFoundException("User not found"));
         FriendConnection connection = new FriendConnection(null, user, friend, FriendConnectionStatus.PENDING);
-        return DTOMappings.fromFriendConnectionToFriendConnectionDTO(connectionRepository.save(connection));
+        return DTOMappings.INSTANCE.toFriendConnectionDTO(connectionRepository.save(connection));
     }
 
     public FriendConnectionDTO respondToFriendRequest(Long connectionId, FriendConnectionStatus status) {
@@ -44,7 +44,7 @@ public class FriendConnectionService {
         }
 
         connection.setStatus(status);
-        return DTOMappings.fromFriendConnectionToFriendConnectionDTO(connectionRepository.save(connection));
+        return DTOMappings.INSTANCE.toFriendConnectionDTO(connectionRepository.save(connection));
     }
 
     public List<FriendConnection> getFriends() {
@@ -55,14 +55,14 @@ public class FriendConnectionService {
     }
 
     public List<FriendConnectionDTO> getFriendsWithDTO() {
-        return getFriends().stream().map(DTOMappings::fromFriendConnectionToFriendConnectionDTO)
+        return getFriends().stream().map(DTOMappings.INSTANCE::toFriendConnectionDTO)
                 .toList();
     }
 
     public List<FriendConnectionDTO> getPendingRequests() {
         User user = getLoggedInUser();
         return connectionRepository.findByFriendAndStatus(user, FriendConnectionStatus.PENDING)
-                .stream().map(DTOMappings::fromFriendConnectionToFriendConnectionDTO)
+                .stream().map(DTOMappings.INSTANCE::toFriendConnectionDTO)
                 .toList();
     }
 

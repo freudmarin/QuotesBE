@@ -46,11 +46,11 @@ public class UserService {
         if (areFriends || requestingUser.equals(user)) {
             posts = postRepository.findByUserAndIsDeletedIsFalse(user);
             postsDTO= posts.stream()
-                    .map(DTOMappings::fromPostToPostDTO)
+                    .map(DTOMappings.INSTANCE::toPostDTO)
                     .toList();
         }
 
-        return DTOMappings.fromUserToProfileDTO(user, postsDTO);
+        return DTOMappings.INSTANCE.toUserProfileDTO(user, postsDTO);
 
     }
 

@@ -60,7 +60,7 @@ public class PostService {
         post.setUpdatedAt(LocalDateTime.now());
         post.setPublic(postDto.getIsPublic());
 
-        return DTOMappings.fromPostToPostDTO(postRepository.save(post));
+        return DTOMappings.INSTANCE.toPostDTO(postRepository.save(post));
     }
 
 
@@ -77,7 +77,7 @@ public class PostService {
 
     public List<PostDTO> getUserPosts(Long authorId, User requestingUser) {
         return postRepository.findAccessiblePosts(authorId, requestingUser).stream().map(
-                DTOMappings::fromPostToPostDTO).toList();
+                DTOMappings.INSTANCE::toPostDTO).toList();
     }
 
 }

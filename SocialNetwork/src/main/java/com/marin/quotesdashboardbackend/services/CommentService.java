@@ -45,7 +45,7 @@ public class CommentService {
         comment.setContent(content);
         comment.setAddedAt(LocalDateTime.now());
         Comment savedComment = commentRepository.save(comment);
-        return DTOMappings.fromCommentToCommentDTO(savedComment);
+        return DTOMappings.INSTANCE.toCommentDTO(savedComment);
     }
 
     public List<CommentDTO> getCommentsByPost(Long postId) {
@@ -57,8 +57,7 @@ public class CommentService {
             throw new UnauthorizedException("You are not authorized to view comments on this post.");
         }
 
-        return post.getComments().stream().map(DTOMappings::fromCommentToCommentDTO)
-                .collect(Collectors.toList());
+        return post.getComments().stream().map(DTOMappings.INSTANCE::toCommentDTO).collect(Collectors.toList());
     }
 
     public CommentDTO updateComment(Long commentId, User user, String content) {
@@ -79,7 +78,7 @@ public class CommentService {
         comment.setContent(content);
         comment.setUpdatedAt(LocalDateTime.now());
         Comment updatedComment = commentRepository.save(comment);
-        return DTOMappings.fromCommentToCommentDTO(updatedComment);
+        return DTOMappings.INSTANCE.toCommentDTO(updatedComment);
     }
 
     @Transactional

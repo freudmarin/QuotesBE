@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class UserPostInteractionDTO {
     private Long id;
+    private PostDTO post;
     private UserDTO user;
     private boolean liked;
     private boolean shared;

@@ -78,7 +78,7 @@ public class PostController {
     public ResponseEntity<PostDTO> getPostById(@PathVariable Long postId) {
         User requestingUser = getLoggedInUser();
         return ResponseEntity.ok(DTOMappings.
-                fromPostToPostDTO(postService.getPostById(postId, requestingUser)));
+                INSTANCE.toPostDTO(postService.getPostById(postId, requestingUser)));
     }
 
     @GetMapping("user/{authorId}")

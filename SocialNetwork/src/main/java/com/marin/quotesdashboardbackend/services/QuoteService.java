@@ -104,7 +104,7 @@ public class QuoteService {
     }
 
     public List<com.marin.quotesdashboardbackend.dtos.QuoteDTO> getQuotesByTags(List<String> tagNames) {
-        return quoteRepository.findByTagNames(tagNames).stream().map(DTOMappings::fromQuoteToQuoteDTO).collect(Collectors.toList());
+        return quoteRepository.findByTagNames(tagNames).stream().map(DTOMappings.INSTANCE::toQuoteDTO).collect(Collectors.toList());
     }
 
     @Transactional
@@ -116,7 +116,7 @@ public class QuoteService {
             quoteOfTheDay = quotes.get(random.nextInt(quotes.size()));
         }
 
-        return DTOMappings.fromQuoteToQuoteDTO(quoteOfTheDay);
+        return DTOMappings.INSTANCE.toQuoteDTO(quoteOfTheDay);
     }
 
     public List<com.marin.quotesdashboardbackend.dtos.QuoteDTO> searchQuotes(String text, String author, List<String> tagNames) {
@@ -125,7 +125,7 @@ public class QuoteService {
         }
         List<Quote> quotes = quoteRepository.searchQuotes(text, author, tagNames);
         return quotes.stream()
-                .map(DTOMappings::fromQuoteToQuoteDTO)
+                .map(DTOMappings.INSTANCE::toQuoteDTO)
                 .toList();
     }
 }

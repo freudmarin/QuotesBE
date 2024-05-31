@@ -28,7 +28,7 @@ public class Post {
 
     private String text;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -36,7 +36,7 @@ public class Post {
     private List<UserPostInteraction> interactions;
 
     @Column(name = "added_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime addedAt;
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -54,7 +54,7 @@ public class Post {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        addedAt = LocalDateTime.now();
     }
 
     @PreUpdate

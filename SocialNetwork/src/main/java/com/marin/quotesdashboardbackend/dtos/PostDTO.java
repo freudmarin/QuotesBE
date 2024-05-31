@@ -1,7 +1,7 @@
 package com.marin.quotesdashboardbackend.dtos;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -9,19 +9,19 @@ import java.util.List;
 
 @Getter
 @Setter
-@AllArgsConstructor
+@NoArgsConstructor
 public class PostDTO {
 
     private Long id;
     private QuoteDTO quote;
 
+    private String text;
+
     private List<CommentDTO> comments;
 
     private String postPhotoUrl;
 
-    private UserDTO createdBy;
-
-    private String text;
+    private UserDTO user;
 
     private boolean isPublic;
 

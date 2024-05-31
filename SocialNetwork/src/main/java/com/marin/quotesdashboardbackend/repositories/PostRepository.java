@@ -2,6 +2,8 @@ package com.marin.quotesdashboardbackend.repositories;
 
 import com.marin.quotesdashboardbackend.entities.Post;
 import com.marin.quotesdashboardbackend.entities.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +18,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "OR p.user IN (SELECT fc.user FROM FriendConnection fc WHERE fc.friend = :requestingUser AND fc.status = 'ACCEPTED'))")
     List<Post> findAccessiblePosts(@Param("authorId") Long authorId, @Param("requestingUser") User requestingUser);
 
-    @Query("SELECT p FROM Post p WHERE p.isPublic = true OR (p.user.id IN :friendIds AND p.isDeleted = false) ORDER BY p.createdAt DESC")
-    List<Post> findLatestPublicAndFriendsPosts(@Param("friendIds") List<Long> friendIds);
+    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.user WHERE p.isPublic = true OR p.user.id IN :userIds ORDER BY p.addedAt DESC")
+    Page<Post> findLatestPublicAndFriendsPosts(@Param("userIds") List<Long> userIds, Pageable pageable);
 }

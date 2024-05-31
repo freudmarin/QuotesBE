@@ -43,7 +43,7 @@ public class ContentBasedFiltering {
                 .sorted(Map.Entry.<Quote, Double>comparingByValue().reversed())
                 .limit(10)
                 .map(Map.Entry::getKey)
-                .map(DTOMappings::fromQuoteToQuoteDTO)
+                .map(DTOMappings.INSTANCE::toQuoteDTO)
                 .toList();
 
         log.info("Recommended quotes in Content-based filtering: {}", quotesToRecommend.size());

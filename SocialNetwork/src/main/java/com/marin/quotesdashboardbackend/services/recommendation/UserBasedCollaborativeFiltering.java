@@ -54,7 +54,7 @@ public class UserBasedCollaborativeFiltering {
         //userToQuotesMap.getOrDefault(user, Collections.emptyList()).forEach(recommendedQuotes::remove);
 
         List<QuoteDTO> quotesToRecommend = recommendedQuotes.stream()
-                .map(DTOMappings::fromQuoteToQuoteDTO)
+                .map(DTOMappings.INSTANCE::toQuoteDTO)
                 .collect(Collectors.toList());
 
         log.info("User-based collaborative filtering quotes size: {}", quotesToRecommend.size());
