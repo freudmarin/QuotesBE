@@ -1,7 +1,7 @@
 package com.marin.quotesdashboardbackend.controllers;
 
 import com.marin.quotesdashboardbackend.dtos.JwtLoginRequest;
-import com.marin.quotesdashboardbackend.dtos.JwtResponse;
+import com.marin.quotesdashboardbackend.response.JwtResponse;
 import com.marin.quotesdashboardbackend.dtos.JwtSignupRequest;
 import com.marin.quotesdashboardbackend.services.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,7 +37,7 @@ public class AuthController {
     }
 
     @PostMapping("logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication,
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication,
                                        @RequestHeader("Authorization") String token) {
         authenticationService.logout(request, response, authentication, token);
         return new ResponseEntity<>(HttpStatus.OK);

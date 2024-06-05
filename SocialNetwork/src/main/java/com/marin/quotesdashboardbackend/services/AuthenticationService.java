@@ -1,9 +1,10 @@
 package com.marin.quotesdashboardbackend.services;
 
 import com.marin.quotesdashboardbackend.dtos.JwtLoginRequest;
-import com.marin.quotesdashboardbackend.dtos.JwtResponse;
+import com.marin.quotesdashboardbackend.response.JwtResponse;
 import com.marin.quotesdashboardbackend.dtos.JwtSignupRequest;
 import com.marin.quotesdashboardbackend.entities.User;
+import com.marin.quotesdashboardbackend.exceptions.EmailExistsException;
 import com.marin.quotesdashboardbackend.exceptions.UnauthorizedException;
 import com.marin.quotesdashboardbackend.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -40,15 +42,23 @@ public class AuthenticationService {
 
 
     public JwtResponse registerUser(JwtSignupRequest signupRequest) {
-        User newUser = new User();
-        newUser.setName(signupRequest.getName());
-        newUser.setEmail(signupRequest.getEmail());
-        newUser.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
-        newUser.setRoles(Collections.singletonList("ROLE_USER"));
-        userRepository.save(newUser);
+        try {
+            User user = customUserDetailsService.loadUserEntityByUsername(signupRequest.getEmail());
+            if (user != null) {
+                throw new EmailExistsException("Email already exists");
+            }
+        } catch (UsernameNotFoundException e) {
+            User newUser = new User();
+            newUser.setName(signupRequest.getName());
+            newUser.setEmail(signupRequest.getEmail());
+            newUser.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+            newUser.setRoles(Collections.singletonList("ROLE_USER"));
+            userRepository.save(newUser);
 
-        final var jwt = jwtService.generateToken(newUser.getUsername());
-        return JwtResponse.builder().jwtToken(jwt).build();
+            final var jwt = jwtService.generateToken(newUser.getUsername());
+            return JwtResponse.builder().jwtToken(jwt).build();
+        }
+        return null;
     }
 
     public JwtResponse authenticateUser(JwtLoginRequest authenticationRequest) {

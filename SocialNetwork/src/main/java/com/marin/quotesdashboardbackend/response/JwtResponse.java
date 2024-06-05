@@ -1,4 +1,4 @@
-package com.marin.quotesdashboardbackend.dtos;
+package com.marin.quotesdashboardbackend.response;
 
 import lombok.Builder;
 import lombok.Getter;
