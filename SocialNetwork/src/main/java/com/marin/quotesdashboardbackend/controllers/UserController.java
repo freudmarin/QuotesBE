@@ -35,6 +35,7 @@ public class UserController {
         UserProfileDTO userProfile = userService.getUserProfile(userId, requestingUser);
         return ResponseEntity.ok(userProfile);
     }
+
     @PostMapping("profile")
     public ResponseEntity<Void> updateUserProfile(@RequestBody UserProfileUpdateDTO updateDTO) {
         User user = getLoggedInUser();

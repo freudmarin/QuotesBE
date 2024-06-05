@@ -24,7 +24,9 @@ import java.util.List;
 public class PostController {
 
     private final CustomUserDetailsService userDetailsService;
+
     private final PostService postService;
+
     private final UserPostInteractionService userPostInteractionService;
 
     private User getLoggedInUser() {

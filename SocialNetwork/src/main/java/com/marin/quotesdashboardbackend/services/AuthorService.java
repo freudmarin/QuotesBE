@@ -22,7 +22,9 @@ import java.util.stream.Collectors;
 public class AuthorService {
 
     private final Authors apiService;
+
     private final AuthorRepository authorRepository;
+
     public AuthorService(AuthorRepository authorRepository) {
         this.apiService = RetrofitClient.getClient().create(Authors.class);
         this.authorRepository = authorRepository;

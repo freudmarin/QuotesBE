@@ -25,8 +25,6 @@ public interface UserPostInteractionRepository extends JpaRepository<UserPostInt
     @Query("SELECT up FROM UserPostInteraction up JOIN FETCH up.post WHERE up.liked = true")
     List<UserPostInteraction> findAllLikedPosts();
 
-    List<UserPostInteraction> findByUserInOrderByAddedAtDesc(List<User> users);
-
     @Query("SELECT i FROM UserPostInteraction i " +
             "JOIN i.post p " +
             "WHERE (i.user IN :friends AND p.isPublic = true) " +

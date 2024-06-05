@@ -21,7 +21,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "OR p.user IN (SELECT fc.user FROM FriendConnection fc WHERE fc.friend = :requestingUser AND fc.status = 'ACCEPTED'))")
     List<Post> findAccessiblePosts(@Param("authorId") Long authorId, @Param("requestingUser") User requestingUser);
 
-    /*@Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.user WHERE p.isPublic = true OR p.user.id IN :userIds ORDER BY p.addedAt DESC")*/
     @Query("SELECT p FROM Post p " +
             "LEFT JOIN p.quote.tags t " +
             "LEFT JOIN p.user a " +

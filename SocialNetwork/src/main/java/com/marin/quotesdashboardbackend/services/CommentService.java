@@ -30,9 +30,13 @@ import java.util.stream.Collectors;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+
     private final PostRepository postRepository;
+
     private final FriendConnectionRepository friendConnectionRepository;
+
     private final CustomUserDetailsService customUserDetailsService;
+
     private final SimpMessagingTemplate messagingTemplate;
 
     public CommentDTO addComment(Long postId, User user, String content) {

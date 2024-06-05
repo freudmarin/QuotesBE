@@ -12,7 +12,9 @@ import java.util.Set;
 
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Long> {
+
     List<Tag> findAllByNameIn(Set<String> names);
+
     @Query("SELECT t.name FROM Tag t WHERE t.name IN :names")
     Set<String> findNamesByNamesIn(@Param("names") List<String> names);
 }

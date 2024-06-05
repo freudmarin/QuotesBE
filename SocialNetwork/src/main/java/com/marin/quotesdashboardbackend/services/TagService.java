@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public class TagService {
 
     private final Tags apiService;
+
     private final TagRepository tagRepository;
 
     public TagService(TagRepository tagRepository) {

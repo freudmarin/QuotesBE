@@ -21,6 +21,7 @@ import java.util.List;
 public class FriendConnectionService {
 
     private final FriendConnectionRepository connectionRepository;
+
     private final UserRepository userRepository;
 
     private User getLoggedInUser() {

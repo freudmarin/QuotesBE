@@ -27,9 +27,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class QuoteService {
     private final Quotes apiService;
+
     private final QuoteRepository quoteRepository;
+
     private final AuthorRepository authorRepository;
+
     private final TagRepository tagRepository;
+
     private Quote quoteOfTheDay;
 
     public QuoteService(QuoteRepository quoteRepository, AuthorRepository authorRepository, TagRepository tagRepository) {

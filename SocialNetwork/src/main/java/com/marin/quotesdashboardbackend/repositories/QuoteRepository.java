@@ -11,6 +11,7 @@ import java.util.Set;
 
 @Repository
 public interface QuoteRepository extends JpaRepository<Quote, Long>, QuoteRepositoryCustom{
+
     @Query("SELECT q.text FROM Quote q WHERE q.text IN :texts")
     Set<String> findTextsByContent(@Param("texts") List<String> texts);
 

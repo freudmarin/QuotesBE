@@ -21,6 +21,7 @@ public class UserPostInteractionService {
     private final UserPostInteractionRepository repository;
 
     private final PostRepository postRepository;
+
     private final UserPostInteractionRepository userPostInteractionRepository;
 
     private final FriendConnectionRepository friendConnectionRepository;
