@@ -21,10 +21,12 @@ dependencies {
     implementation 'jakarta.validation:jakarta.validation-api:3.1.0'
     implementation 'org.springframework.boot:spring-boot-starter-quartz'
     implementation 'org.mapstruct:mapstruct:1.4.2.Final'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
     annotationProcessor 'org.projectlombok:lombok'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
     compileOnly 'org.projectlombok:lombok'
-
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.security:spring-security-test'
     runtimeOnly 'org.postgresql:postgresql'
 }

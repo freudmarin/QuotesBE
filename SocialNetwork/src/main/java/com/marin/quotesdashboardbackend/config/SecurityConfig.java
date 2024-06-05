@@ -34,7 +34,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("api/v1/auth/**", "/login/oauth2/code/google").permitAll()
+                        .requestMatchers("api/v1/auth/**", "/login/oauth2/code/google", "/ws/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

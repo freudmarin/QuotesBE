@@ -7,12 +7,15 @@ import com.marin.quotesdashboardbackend.entities.Post;
 import com.marin.quotesdashboardbackend.entities.User;
 import com.marin.quotesdashboardbackend.enums.FriendConnectionStatus;
 import com.marin.quotesdashboardbackend.exceptions.UnauthorizedException;
+import com.marin.quotesdashboardbackend.models.Notification;
 import com.marin.quotesdashboardbackend.repositories.CommentRepository;
 import com.marin.quotesdashboardbackend.repositories.FriendConnectionRepository;
 import com.marin.quotesdashboardbackend.repositories.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -23,12 +26,14 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final FriendConnectionRepository friendConnectionRepository;
     private final CustomUserDetailsService customUserDetailsService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public CommentDTO addComment(Long postId, User user, String content) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
@@ -45,6 +50,14 @@ public class CommentService {
         comment.setContent(content);
         comment.setAddedAt(LocalDateTime.now());
         Comment savedComment = commentRepository.save(comment);
+
+        Notification notification = new Notification();
+        notification.setType("COMMENT");
+        notification.setMessage(user.getName() + " commented on your post");
+        notification.setPostId(postId);
+
+        messagingTemplate.convertAndSend("/topic/notifications", notification);
+        log.info("Notification sent: {}", notification);
         return DTOMappings.INSTANCE.toCommentDTO(savedComment);
     }
 
