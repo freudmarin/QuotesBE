@@ -33,7 +33,7 @@ public class WebClientConfig {
     private ExchangeFilterFunction logRequest() {
         return (clientRequest, next) -> {
             // Log request details
-            log.info("Request: " + clientRequest.method() + " " + clientRequest.url());
+            log.info("Request: {} {}", clientRequest.method(), clientRequest.url());
             return next.exchange(clientRequest);
         };
     }
@@ -41,7 +41,7 @@ public class WebClientConfig {
     private ExchangeFilterFunction logResponse() {
         return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
             // Log response details
-            log.info("Response: " + clientResponse.statusCode());
+            log.info("Response: {}", clientResponse.statusCode());
             return Mono.just(clientResponse);
         });
     }
@@ -50,18 +50,18 @@ public class WebClientConfig {
         return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
             if (clientResponse.statusCode().equals(HttpStatus.OK)) {
                 // Handle 200 OK
-                log.info("Response OK: " + clientResponse.statusCode());
+                log.info("Response OK: {}", clientResponse.statusCode());
                 return Mono.just(clientResponse);
             } else if (clientResponse.statusCode().equals(HttpStatus.NOT_FOUND)) {
                 // Handle 404 NOT FOUND
-                log.error("Not Found: " + clientResponse.statusCode());
+                log.error("Not Found: {}", clientResponse.statusCode());
                 return Mono.error(new RuntimeException("Resource not found"));
             } else if (clientResponse.statusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR)) {
                 // Handle 500 INTERNAL SERVER ERROR
-                log.error("Internal Server Error: " + clientResponse.statusCode());
+                log.error("Internal Server Error: {}", clientResponse.statusCode());
                 return Mono.error(new RuntimeException("Internal server error occurred"));
             } else {
-                log.error("An unexpected error occurred: " + clientResponse.statusCode());
+                log.error("An unexpected error occurred: {}", clientResponse.statusCode());
                 return Mono.just(clientResponse);
             }
         });
