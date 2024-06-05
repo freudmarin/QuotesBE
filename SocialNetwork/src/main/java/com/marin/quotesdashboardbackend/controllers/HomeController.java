@@ -1,4 +1,4 @@
-package com.marin.quotesdashboardbackend.controller;
+package com.marin.quotesdashboardbackend.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

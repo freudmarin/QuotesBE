@@ -1,4 +1,4 @@
-package com.marin.quotesdashboardbackend.controller;
+package com.marin.quotesdashboardbackend.controllers;
 
 import com.marin.quotesdashboardbackend.dtos.JwtLoginRequest;
 import com.marin.quotesdashboardbackend.dtos.JwtResponse;
