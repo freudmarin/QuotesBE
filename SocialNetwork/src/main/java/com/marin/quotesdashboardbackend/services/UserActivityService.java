@@ -3,9 +3,7 @@ package com.marin.quotesdashboardbackend.services;
 import com.marin.quotesdashboardbackend.dtos.DTOMappings;
 import com.marin.quotesdashboardbackend.dtos.UserActivityDTO;
 import com.marin.quotesdashboardbackend.dtos.UserPostInteractionDTO;
-import com.marin.quotesdashboardbackend.entities.Post;
-import com.marin.quotesdashboardbackend.entities.User;
-import com.marin.quotesdashboardbackend.entities.UserPostInteraction;
+import com.marin.quotesdashboardbackend.entities.*;
 import com.marin.quotesdashboardbackend.repositories.PostRepository;
 import com.marin.quotesdashboardbackend.repositories.UserPostInteractionRepository;
 import com.marin.quotesdashboardbackend.repositories.UserRepository;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,8 +38,10 @@ public class UserActivityService {
         friends.add(user);
 
         Pageable pageable = PageRequest.of(page, size);
+        Set<Tag> favoriteTags = user.getFavoriteTags();
+        Set<Author> favoriteAuthors = user.getFavoriteAuthors();
         log.info("Fetching posts for friends and public with pageable: {}", pageable);
-        Page<Post> friendAndPublicPostsPage = getFriendAndPublicPosts(friends, pageable);
+        Page<Post> friendAndPublicPostsPage =  getFriendAndPublicPosts(friends, favoriteTags, favoriteAuthors, pageable);
         List<Post> friendAndPublicPosts = friendAndPublicPostsPage.getContent();
         List<UserPostInteraction> friendInteractions = getFriendInteractions(friends);
 
@@ -63,8 +64,8 @@ public class UserActivityService {
                 .collect(Collectors.toList());
     }
 
-    private Page<Post> getFriendAndPublicPosts(List<User> friends, Pageable pageable) {
-        return postRepository.findLatestPublicAndFriendsPosts(friends.stream().map(User::getId).toList(), pageable);
+    private Page<Post> getFriendAndPublicPosts(List<User> friends, Set<Tag> favoriteTags, Set<Author> favoriteAuthors, Pageable pageable) {
+        return postRepository.findLatestPublicAndFriendsPosts(friends.stream().map(User::getId).toList(), favoriteTags, favoriteAuthors, pageable);
     }
 
     private List<UserPostInteraction> getFriendInteractions(List<User> friends) {

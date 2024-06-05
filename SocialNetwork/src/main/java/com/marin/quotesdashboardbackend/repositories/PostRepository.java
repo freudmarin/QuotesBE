@@ -1,6 +1,8 @@
 package com.marin.quotesdashboardbackend.repositories;
 
+import com.marin.quotesdashboardbackend.entities.Author;
 import com.marin.quotesdashboardbackend.entities.Post;
+import com.marin.quotesdashboardbackend.entities.Tag;
 import com.marin.quotesdashboardbackend.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -18,6 +21,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "OR p.user IN (SELECT fc.user FROM FriendConnection fc WHERE fc.friend = :requestingUser AND fc.status = 'ACCEPTED'))")
     List<Post> findAccessiblePosts(@Param("authorId") Long authorId, @Param("requestingUser") User requestingUser);
 
-    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.user WHERE p.isPublic = true OR p.user.id IN :userIds ORDER BY p.addedAt DESC")
-    Page<Post> findLatestPublicAndFriendsPosts(@Param("userIds") List<Long> userIds, Pageable pageable);
+    /*@Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.user WHERE p.isPublic = true OR p.user.id IN :userIds ORDER BY p.addedAt DESC")*/
+    @Query("SELECT p FROM Post p " +
+            "LEFT JOIN p.quote.tags t " +
+            "LEFT JOIN p.user a " +
+            "WHERE p.isPublic = true " +
+            "OR p.user.id IN :friendIds " +
+            "OR t IN :favoriteTags " +
+            "OR a IN :favoriteAuthors " +
+            "ORDER BY p.addedAt DESC")
+    Page<Post> findLatestPublicAndFriendsPosts(@Param("friendIds") List<Long> friendIds,
+                                               @Param("favoriteTags") Set<Tag> favoriteTags,
+                                               @Param("favoriteAuthors") Set<Author> favoriteAuthors,
+                                               Pageable pageable);
 }
