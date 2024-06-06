@@ -67,9 +67,10 @@ public class PostService {
         post.setUpdatedAt(LocalDateTime.now());
         post.setPublic(postDto.getIsPublic());
 
-        String uploadedPhotoUrl = fileStorageService.storeFile(file);
-
-        post.setPostPhotoUrl(uploadedPhotoUrl);
+        if (file != null && !file.isEmpty()){
+            String uploadedPhotoUrl = fileStorageService.storeFile(file);
+            post.setPostPhotoUrl(uploadedPhotoUrl);
+        }
         return DTOMappings.INSTANCE.toPostDTO(postRepository.save(post));
     }
 

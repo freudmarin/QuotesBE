@@ -1,6 +1,7 @@
 package com.marin.socialnetwork.services;
 
 
+import com.marin.socialnetwork.common.FileNamingUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 
 @Service
 public class FileStorageService {
@@ -27,14 +29,14 @@ public class FileStorageService {
 
             // Store the file
             try (InputStream inputStream = file.getInputStream()) {
-                Path filePath = uploadPath.resolve(file.getOriginalFilename());
+                Path filePath = uploadPath.resolve(FileNamingUtil.nameFile(file));
                 Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 throw new IOException("Could not save file");
             }
 
             // Return the relative path for serving the file
-            return "/images/" + file.getOriginalFilename();
+            return "/images/" + LocalDateTime.now() +  file.getOriginalFilename();
 
         } catch (IOException e) {
             throw new RuntimeException("Could not store file " + file.getOriginalFilename(), e);
