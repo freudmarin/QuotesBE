@@ -1,6 +1,7 @@
 plugins {
     id 'org.springframework.boot' version '3.2.5'
     id 'java'
+    id 'org.flywaydb.flyway' version '9.2.0'
 }
 bootJar {
     mainClass = 'com.marin.SocialNetwork.SocialNetworkBackendApplication'
@@ -29,6 +30,13 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.security:spring-security-test'
     runtimeOnly 'org.postgresql:postgresql'
+}
+
+flyway {
+    url = 'jdbc:postgresql://localhost:5434/QuotesSocialNetwork'
+    user = 'postgres'
+    password = 'test'
+    locations = ['classpath:db/migration']
 }
 
 tasks.withType(JavaCompile) {
