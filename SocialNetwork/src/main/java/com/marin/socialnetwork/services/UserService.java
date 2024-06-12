@@ -9,6 +9,7 @@ import com.marin.socialnetwork.entities.Post;
 import com.marin.socialnetwork.entities.Tag;
 import com.marin.socialnetwork.entities.User;
 import com.marin.socialnetwork.enums.FriendConnectionStatus;
+import com.marin.socialnetwork.exceptions.UnauthorizedException;
 import com.marin.socialnetwork.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -83,5 +84,20 @@ public class UserService {
         user.setProfilePictureUrl(profilePictureUrl);
         userRepository.save(user);
         return profilePictureUrl;
+    }
+
+    @Transactional
+    public void deleteUserProfile(User loggedUser, Long id) {
+        if (!loggedUser.getId().equals(id)) {
+            throw new UnauthorizedException("You are not authorized to delete this user profile.");
+        }
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        user.setDeleted(true);
+        user.getPosts().forEach(post -> post.setDeleted(true));
+        user.getRoles().clear();
+        user.getFavoriteTags().clear();
+        user.getFavoriteAuthors().clear();
+        user.getInteractions().clear();
+        userRepository.save(user);
     }
 }

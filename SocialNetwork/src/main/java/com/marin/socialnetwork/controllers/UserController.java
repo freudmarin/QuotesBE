@@ -49,4 +49,11 @@ public class UserController {
         String profilePictureUrl = userService.uploadProfilePicture(user, file);
         return ResponseEntity.ok(profilePictureUrl);
     }
+
+    @DeleteMapping("profile/{id}")
+    public ResponseEntity<?> deleteUserProfile(@PathVariable Long id) {
+        User user = getLoggedInUser();
+        userService.deleteUserProfile(user, id);
+        return ResponseEntity.noContent().build();
+    }
 }
