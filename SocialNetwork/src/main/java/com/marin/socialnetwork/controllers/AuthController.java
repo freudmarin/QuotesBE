@@ -6,6 +6,7 @@ import com.marin.socialnetwork.response.JwtResponse;
 import com.marin.socialnetwork.services.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +21,12 @@ public class AuthController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("register")
-    public ResponseEntity<JwtResponse> registerUser(@RequestBody JwtSignupRequest signupRequest) {
+    public ResponseEntity<JwtResponse> registerUser(@Valid @RequestBody JwtSignupRequest signupRequest) {
         return ResponseEntity.ok(authenticationService.registerUser(signupRequest));
     }
 
     @PostMapping("authenticate")
-    public ResponseEntity<JwtResponse> createAuthenticationToken(@RequestBody JwtLoginRequest authenticationRequest) {
+    public ResponseEntity<JwtResponse> createAuthenticationToken(@Valid @RequestBody JwtLoginRequest authenticationRequest) {
         return ResponseEntity.ok(authenticationService.authenticateUser(authenticationRequest));
     }
 

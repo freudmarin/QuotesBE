@@ -12,11 +12,11 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 public class JwtLoginRequest {
-    @NotEmpty
-    @Email
+    @NotEmpty(message = "Email cannot be empty")
+    @Email(message = "Email is not valid", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
     private String email;
 
-    @NotEmpty
+    @NotEmpty(message = "Password cannot be empty")
     private String password;
 
     // Getters and setters
